@@ -1,26 +1,420 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── Season palettes ──────────────────────────────
+   레이아웃과 primary(세이지 그린)는 계절과 무관하게 고정.
+   계절은 배경 톤 · accent · 식물 팔레트만 바꾼다.
+   라이트/다크 각각 4계절 팔레트를 가진다. */
+:root,
+html[data-season="spring"] {
+  color-scheme: light dark;
+
+  --bg: #faf7f2;
+  --surface: #ffffff;
+  --primary: #7c9a72;
+  --on-primary: #ffffff;
+  --primary-soft: #e9efe4;
+  --accent: #d9a7ad;
+  --ink: #3a3a36;
+  --muted: #8a897f;
+  --line: #ece7dd;
+
+  --ground: #e6ecd9;
+  --ground-2: #dde5cf;
+  --stem: #8fae7e;
+  --leaf: #a3c18f;
+  --petal: #e4b8be;
+  --petal-2: #f0d3d6;
+  --core: #f2e4b8;
+  --trunk: #a98b6c;
+  --canopy: #9dbb8a;
+  --canopy-2: #b4cd9f;
+
+  --scrim: rgba(48, 46, 40, 0.32);
+  --plant-shadow: rgba(58, 58, 54, 0.07);
+  --sh-card: 0 1px 2px rgba(31, 30, 25, 0.03), 0 4px 16px rgba(31, 30, 25, 0.04);
+  --sh-float: 0 2px 8px rgba(31, 30, 25, 0.06), 0 16px 48px rgba(31, 30, 25, 0.14);
+  --sh-sheet: 0 -8px 40px rgba(31, 30, 25, 0.1);
+  --sh-btn: 0 1px 2px rgba(31, 30, 25, 0.06),
+    0 6px 16px -6px color-mix(in srgb, var(--primary) 55%, transparent);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html[data-season="summer"] {
+  --bg: #f4f7f1;
+  --accent: #3e6b4f;
+  --line: #e4eadb;
+  --primary-soft: #e3ecdb;
+  --ground: #dbe7cf;
+  --ground-2: #cfdec1;
+  --stem: #6e9463;
+  --leaf: #7fa96f;
+  --petal: #e9c46a;
+  --petal-2: #f2d998;
+  --core: #f7efd2;
+  --trunk: #93794f;
+  --canopy: #7ba368;
+  --canopy-2: #8fb57d;
 }
 
+html[data-season="autumn"] {
+  --bg: #faf5ec;
+  --accent: #c08552;
+  --line: #eee3d0;
+  --primary-soft: #eae4d3;
+  --ground: #ecdfc4;
+  --ground-2: #e3d3b2;
+  --stem: #a98f5f;
+  --leaf: #c7a96b;
+  --petal: #d98e5f;
+  --petal-2: #e8b48c;
+  --core: #f3e3c2;
+  --trunk: #8f6b4a;
+  --canopy: #d2a05c;
+  --canopy-2: #c8925f;
+}
+
+html[data-season="winter"] {
+  --bg: #f6f8fa;
+  --accent: #8fa8bc;
+  --line: #e4eaef;
+  --primary-soft: #e4eae5;
+  --ground: #e2e9ee;
+  --ground-2: #d6e0e7;
+  --stem: #7e9884;
+  --leaf: #93ac98;
+  --petal: #b8c9d8;
+  --petal-2: #d4dfe8;
+  --core: #eef2f5;
+  --trunk: #8b8378;
+  --canopy: #a3b8a8;
+  --canopy-2: #b9cbbe;
+}
+
+/* ── Dark mode ────────────────────────────────────
+   같은 계절 정서를 유지하되 채도를 낮추고 명도를 뒤집는다.
+   순수 블랙 대신 계절 톤이 살짝 밴 웜/쿨 다크. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root,
+  html[data-season="spring"] {
+    --bg: #191b17;
+    --surface: #22251f;
+    --primary: #8bab7a;
+    --on-primary: #161c13;
+    --primary-soft: #2c3529;
+    --accent: #c9939b;
+    --ink: #eceae2;
+    --muted: #97968a;
+    --line: #31342c;
+
+    --ground: #2a3226;
+    --ground-2: #232a20;
+    --stem: #7fa06f;
+    --leaf: #93b47f;
+    --petal: #c88f97;
+    --petal-2: #dbadb2;
+    --core: #dcc98f;
+    --trunk: #97795a;
+    --canopy: #7ba268;
+    --canopy-2: #8fb67c;
+
+    --scrim: rgba(8, 9, 7, 0.55);
+    --plant-shadow: rgba(0, 0, 0, 0.28);
+    --sh-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.22);
+    --sh-float: 0 2px 8px rgba(0, 0, 0, 0.3), 0 16px 48px rgba(0, 0, 0, 0.5);
+    --sh-sheet: 0 -8px 40px rgba(0, 0, 0, 0.45);
+    --sh-btn: 0 1px 2px rgba(0, 0, 0, 0.25),
+      0 6px 16px -6px color-mix(in srgb, var(--primary) 40%, transparent);
+  }
+
+  html[data-season="summer"] {
+    --bg: #171a15;
+    --surface: #202520;
+    --accent: #86b795;
+    --line: #2d332a;
+    --primary-soft: #293226;
+    --ground: #262f21;
+    --ground-2: #1f271c;
+    --stem: #6f9c60;
+    --leaf: #83af6f;
+    --petal: #d9b35c;
+    --petal-2: #e5c883;
+    --core: #ebdfae;
+    --trunk: #8d764f;
+    --canopy: #75a35f;
+    --canopy-2: #87b471;
+  }
+
+  html[data-season="autumn"] {
+    --bg: #1b1814;
+    --surface: #252119;
+    --accent: #d09b62;
+    --line: #363026;
+    --primary-soft: #2f2d22;
+    --ground: #2d2a1e;
+    --ground-2: #262318;
+    --stem: #a68e58;
+    --leaf: #c2a763;
+    --petal: #d38e58;
+    --petal-2: #e0ab7c;
+    --core: #e4d29c;
+    --trunk: #8d6c49;
+    --canopy: #cb9c55;
+    --canopy-2: #bf8e58;
+  }
+
+  html[data-season="winter"] {
+    --bg: #15181b;
+    --surface: #1f2327;
+    --accent: #92abbf;
+    --line: #2b3138;
+    --primary-soft: #252d27;
+    --ground: #262d34;
+    --ground-2: #1f262d;
+    --stem: #7b957f;
+    --leaf: #90ab94;
+    --petal: #a9bccd;
+    --petal-2: #c2d2df;
+    --core: #d6dee5;
+    --trunk: #837b70;
+    --canopy: #94aa98;
+    --canopy-2: #a6bbaa;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+
+  --shadow-card: var(--sh-card);
+  --shadow-float: var(--sh-float);
+  --shadow-sheet: var(--sh-sheet);
+  --shadow-btn: var(--sh-btn);
+}
+
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
+  --radius-card: 20px;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+::selection {
+  background: var(--primary-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Plant sway ───────────────────────────────────
+   식물이 바람에 아주 잔잔하게 흔들린다.
+   진폭(--sway-a)과 주기는 식물 단계·개체마다 조금씩 다르다. */
+@keyframes plant-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(var(--sway-a, 1.6deg));
+  }
+  70% {
+    transform: rotate(calc(var(--sway-a, 1.6deg) * -0.75));
+  }
+}
+
+.plant-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: plant-sway 5.6s ease-in-out infinite;
+}
+
+/* ── Seasonal ambience ────────────────────────────
+   계절마다 가끔 등장하는 작은 입자 — 벚꽃잎 · 반딧불 · 낙엽 · 눈송이.
+   현재 계절의 그룹만 표시된다. */
+.amb {
+  display: none;
+}
+html[data-season="spring"] .amb-spring,
+html[data-season="autumn"] .amb-autumn,
+html[data-season="winter"] .amb-winter {
+  display: initial;
+}
+html[data-season="summer"] .amb-summer {
+  display: initial;
+  opacity: 0.65;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-season="summer"] .amb-summer {
+    opacity: 1;
+  }
+}
+
+.amb-petal {
+  animation: amb-petal 5.5s ease-in-out infinite;
+}
+@keyframes amb-petal {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.95;
+  }
+  45% {
+    transform: translate(-34px, 88px) rotate(-70deg);
+  }
+  78% {
+    opacity: 0.95;
+  }
+  88% {
+    transform: translate(-88px, 205px) rotate(-160deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-88px, 205px) rotate(-160deg);
+    opacity: 0;
+  }
+}
+
+.amb-leaf-fall {
+  animation: amb-leaf-fall 6s ease-in-out infinite;
+}
+@keyframes amb-leaf-fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.9;
+  }
+  45% {
+    transform: translate(40px, 92px) rotate(120deg);
+  }
+  76% {
+    opacity: 0.9;
+  }
+  88% {
+    transform: translate(78px, 208px) rotate(260deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(78px, 208px) rotate(260deg);
+    opacity: 0;
+  }
+}
+
+.amb-fly {
+  animation: amb-fly 9s ease-in-out infinite;
+}
+.amb-fly-2 {
+  animation-delay: -4.5s;
+}
+@keyframes amb-fly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  22% {
+    opacity: 0.2;
+  }
+  34% {
+    transform: translate(30px, -18px);
+    opacity: 0.95;
+  }
+  55% {
+    opacity: 0.1;
+  }
+  70% {
+    transform: translate(52px, -34px);
+    opacity: 0.6;
+  }
+  88% {
+    transform: translate(64px, -46px);
+    opacity: 0;
+  }
+}
+
+.amb-snow {
+  animation: amb-snow 8s linear infinite;
+}
+.amb-snow-2 {
+  animation-delay: -3s;
+  animation-duration: 9s;
+}
+.amb-snow-3 {
+  animation-delay: -5.5s;
+  animation-duration: 10s;
+}
+@keyframes amb-snow {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-16px, 120px);
+    opacity: 0.9;
+  }
+  90% {
+    transform: translate(6px, 205px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(6px, 205px);
+    opacity: 0;
+  }
+}
+
+/* ── Focus glow ───────────────────────────────────
+   집중 시작 버튼이 숨 쉬듯 은은하게 빛난다. */
+@keyframes glow-breathe {
+  0%,
+  100% {
+    box-shadow: 0 1px 2px rgba(31, 30, 25, 0.06),
+      0 6px 16px -6px color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 1px 2px rgba(31, 30, 25, 0.06),
+      0 10px 28px -6px color-mix(in srgb, var(--primary) 75%, transparent),
+      0 0 24px -2px color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+}
+.glow-breathe {
+  animation: glow-breathe 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-sway,
+  .glow-breathe {
+    animation: none;
+  }
+  .amb {
+    display: none !important;
+  }
+  body {
+    transition: none;
+  }
 }

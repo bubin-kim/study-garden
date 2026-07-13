@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { SeasonProvider } from '@/components/SeasonProvider'
 import { AppHeader } from '@/components/AppHeader'
-import { DurationSheet } from '@/components/timer/DurationSheet'
+import { SettingsSheet } from '@/components/SettingsSheet'
 
 export const metadata: Metadata = {
   title: 'Study Garden',
@@ -37,7 +37,7 @@ export default function RootLayout({
             <AppHeader />
             {children}
           </div>
-          <DurationSheet />
+          <SettingsSheet />
         </SeasonProvider>
       </body>
     </html>

@@ -47,6 +47,12 @@ node shoot.mjs --schemes=dark --wait=2500   # 다크만, 대기 늘리기
 
 ## Gotchas
 
+- **:3000에 다른 프로젝트 서버가 떠 있을 수 있다** (`<title>`로 먼저 검증). 그 경우 이
+  프로젝트의 dev를 다른 포트로 켜고 `--base=http://localhost:3001`로 지정한다.
+- **`next build` 직후 같은 `.next`로 dev를 켜면 Turbopack이 패닉**("Failed to write app
+  endpoint … Next.js package not found")하고, HMR이 전면 새로고침 무한 루프를 돌아
+  `networkidle`이 영원히 타임아웃된다 (2026-07-13 실측, Next 16.2.10). 증상: 일부 라우트만
+  playwright 타임아웃, curl은 200. 해결: dev 중지 → `rm -rf .next` → dev 재시작.
 - 시드 키는 `study-garden:sessions`, 형식은 `{id, completedAt(ISO), durationMin}[]`.
   집중 시간 설정 키는 `study-garden:duration`.
 - 식물 성장은 "심은 뒤 누적 시간"이라 시드 14개×60분이면 나무~새싹이 골고루 나온다.

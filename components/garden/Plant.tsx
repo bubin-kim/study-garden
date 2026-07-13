@@ -106,7 +106,8 @@ function FlowerShape({ variant }: { variant: number }) {
   )
 }
 
-function TreeShape() {
+/** 둥근 활엽수 — V1의 기본 나무. */
+function BroadleafTree() {
   return (
     <g>
       <path
@@ -136,6 +137,75 @@ function TreeShape() {
       <ellipse cx="-7" cy="-59" rx="9.5" ry="6" fill="var(--canopy-2)" opacity="0.55" />
     </g>
   )
+}
+
+/** 침엽수 — 곡선 변으로 부드럽게 그린 3단 층. 활엽수보다 좁고 크다. */
+function ConiferTree() {
+  return (
+    <g>
+      <path
+        d="M0 0 C-0.8 -10 -0.6 -20 0 -28"
+        stroke="var(--trunk)"
+        strokeWidth="4.2"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M0 -46 C6 -38 12 -30 17 -24 C6 -26.5 -6 -26.5 -17 -24 C-12 -30 -6 -38 0 -46 Z"
+        fill="var(--canopy-2)"
+      />
+      <path
+        d="M0 -60 C4.5 -53.5 9 -46 13 -40 C4.5 -42.2 -4.5 -42.2 -13 -40 C-9 -46 -4.5 -53.5 0 -60 Z"
+        fill="var(--canopy)"
+      />
+      <path
+        d="M0 -74 C3 -68 6 -60.5 8.5 -55 C3 -56.8 -3 -56.8 -8.5 -55 C-6 -60.5 -3 -68 0 -74 Z"
+        fill="var(--canopy)"
+      />
+      <ellipse cx="-3" cy="-64" rx="3.6" ry="5" fill="var(--canopy-2)" opacity="0.55" />
+    </g>
+  )
+}
+
+/** 아치형 — 가지가 양옆으로 벌어지고 캐노피가 넓게 얹힌 우산 실루엣. 셋 중 가장 낮고 넓다. */
+function ArchTree() {
+  return (
+    <g>
+      <path
+        d="M0 0 C-1 -10 -0.8 -16 0 -22"
+        stroke="var(--trunk)"
+        strokeWidth="4.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M0 -16 C-6 -25 -13 -31 -20 -35"
+        stroke="var(--trunk)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M0 -18 C6 -27 13 -33 19 -37"
+        stroke="var(--trunk)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <ellipse cx="-19" cy="-41" rx="12" ry="8" fill="var(--canopy-2)" />
+      <ellipse cx="18" cy="-43" rx="12.5" ry="8" fill="var(--canopy-2)" />
+      <ellipse cx="0" cy="-47" rx="24" ry="10" fill="var(--canopy)" />
+      <ellipse cx="8" cy="-52" rx="9" ry="5" fill="var(--canopy-2)" opacity="0.55" />
+    </g>
+  )
+}
+
+/** 나무 수종은 꽃잎 색과 같은 방식으로 variant(세션 id 해시)에서 결정된다. */
+function TreeShape({ variant }: { variant: number }) {
+  const kind = variant % 3
+  if (kind === 1) return <ConiferTree />
+  if (kind === 2) return <ArchTree />
+  return <BroadleafTree />
 }
 
 interface PlantProps {
@@ -174,7 +244,7 @@ export function Plant({ stage, variant = 0, delay = 0 }: PlantProps) {
         {stage === 'sprout' && <SproutShape />}
         {stage === 'leaf' && <LeafShape />}
         {stage === 'flower' && <FlowerShape variant={variant} />}
-        {stage === 'tree' && <TreeShape />}
+        {stage === 'tree' && <TreeShape variant={variant} />}
       </g>
     </motion.g>
   )

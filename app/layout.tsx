@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#faf7f2' },
     { media: '(prefers-color-scheme: dark)', color: '#191b17' },
@@ -32,7 +33,7 @@ export default function RootLayout({
       </head>
       <body>
         <SeasonProvider>
-          <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-6">
+          <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             <AppHeader />
             {children}
           </div>

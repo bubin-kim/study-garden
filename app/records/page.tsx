@@ -98,7 +98,15 @@ export default function RecordsPage() {
         <div className="mt-4 rounded-card border border-line bg-surface px-4 pb-3 pt-5">
           <Garden
             plants={plants}
-            emptyText={hydrated ? '이 달의 정원은 조용히 쉬었어요' : undefined}
+            seedWaiting={isCurrent && hydrated}
+            ambient={isCurrent}
+            emptyText={
+              hydrated
+                ? isCurrent
+                  ? '아직 심긴 식물이 없는 달이에요'
+                  : '이 달의 정원은 조용히 쉬었어요'
+                : undefined
+            }
           />
           <p className="mt-2 text-center text-[12px] text-muted">
             {isCurrent ? '이번 달' : `${view.month + 1}월`}의 정원

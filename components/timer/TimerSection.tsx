@@ -78,10 +78,19 @@ export function TimerSection() {
         )}
         {!idle && (
           <Button variant="ghost" onClick={handleReset}>
-            {confirmReset ? '씨앗이 사라져요 · 한 번 더 누르면 초기화' : '그만하기'}
+            그만하기
           </Button>
         )}
       </div>
+      {/* 경고는 자리를 항상 예약해 두어 레이아웃이 밀리지 않는다 */}
+      <p
+        aria-live="polite"
+        className={`mt-3 h-5 text-[13px] text-muted transition-opacity duration-300 ${
+          confirmReset ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        {confirmReset ? '한 번 더 누르면 씨앗이 사라져요' : ' '}
+      </p>
     </section>
   )
 }

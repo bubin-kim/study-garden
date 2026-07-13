@@ -10,12 +10,13 @@ html[data-season="spring"] {
 
   --bg: #faf7f2;
   --surface: #ffffff;
-  --primary: #7c9a72;
+  /* primary·muted는 WCAG AA(4.5:1) 충족값 — 밝게 되돌리지 말 것 */
+  --primary: #5c7b51;
   --on-primary: #ffffff;
   --primary-soft: #e9efe4;
   --accent: #d9a7ad;
   --ink: #3a3a36;
-  --muted: #8a897f;
+  --muted: #6f6c60;
   --line: #ece7dd;
 
   --ground: #e6ecd9;
@@ -62,8 +63,9 @@ html[data-season="autumn"] {
   --primary-soft: #eae4d3;
   --ground: #ecdfc4;
   --ground-2: #e3d3b2;
-  --stem: #a98f5f;
-  --leaf: #c7a96b;
+  /* 어린 식물(줄기·잎)은 가을에도 초록기를 유지 — 수관·꽃만 물든다 */
+  --stem: #85995f;
+  --leaf: #9fae6d;
   --petal: #d98e5f;
   --petal-2: #e8b48c;
   --core: #f3e3c2;
@@ -151,8 +153,8 @@ html[data-season="winter"] {
     --primary-soft: #2f2d22;
     --ground: #2d2a1e;
     --ground-2: #262318;
-    --stem: #a68e58;
-    --leaf: #c2a763;
+    --stem: #8f9c62;
+    --leaf: #a9ad70;
     --petal: #d38e58;
     --petal-2: #e0ab7c;
     --core: #e4d29c;

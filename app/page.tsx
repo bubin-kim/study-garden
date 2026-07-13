@@ -38,9 +38,12 @@ export default function HomePage() {
         <Garden
           plants={plants}
           growing={status !== 'idle'}
+          seedWaiting={hydrated}
           emptyText={hydrated ? '정원이 첫 씨앗을 기다리고 있어요' : undefined}
           emptySub={
-            hydrated ? '오늘 30분만 집중하면 새싹이 자라기 시작해요' : undefined
+            hydrated
+              ? '30분만 집중해 보세요 · 타이머를 끝까지 마치면 씨앗이 심어져요'
+              : undefined
           }
         />
       </section>

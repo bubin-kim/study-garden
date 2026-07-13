@@ -2,6 +2,11 @@
 
 # dependencies
 /node_modules
+
+# Claude 스킬 폴더의 로컬 산출물 (스킬 코드는 커밋, 의존성·스크린샷은 제외)
+.claude/skills/*/node_modules
+.claude/skills/*/screenshots
+.claude/skills/*/package-lock.json
 /.pnp
 .pnp.*
 .yarn/*

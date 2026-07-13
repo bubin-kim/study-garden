@@ -135,9 +135,20 @@ interface GardenProps {
   growing?: boolean
   emptyText?: string
   emptySub?: string
+  /** 빈 정원에 "심어지길 기다리는 씨앗"을 그릴지 — 현재(이번 달) 정원에만 켠다 */
+  seedWaiting?: boolean
+  /** 계절 입자 표시 여부 — 과거 달 정원에는 끈다 */
+  ambient?: boolean
 }
 
-export function Garden({ plants, growing = false, emptyText, emptySub }: GardenProps) {
+export function Garden({
+  plants,
+  growing = false,
+  emptyText,
+  emptySub,
+  seedWaiting = false,
+  ambient = true,
+}: GardenProps) {
   // 뒤쪽(depth 큰) 식물부터 그려서 앞 식물이 자연스럽게 겹치게 한다
   const sorted = [...plants].sort((a, b) => b.depth - a.depth)
   const empty = plants.length === 0 && !growing
@@ -171,7 +182,7 @@ export function Garden({ plants, growing = false, emptyText, emptySub }: GardenP
             <GrowingSeed />
           </g>
         )}
-        {empty && (
+        {empty && seedWaiting && (
           <g transform="translate(400 233)" opacity="0.95">
             <ellipse cx="0" cy="0" rx="12" ry="3.5" fill="var(--ground-2)" />
             <ellipse cx="0" cy="-4.5" rx="4" ry="5" fill="var(--trunk)" />
@@ -184,7 +195,7 @@ export function Garden({ plants, growing = false, emptyText, emptySub }: GardenP
             />
           </g>
         )}
-        <Ambience />
+        {ambient && <Ambience />}
       </svg>
       {empty && emptyText && (
         <div className="pointer-events-none absolute inset-x-0 top-[10%] text-center">

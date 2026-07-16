@@ -22,7 +22,7 @@ const args = Object.fromEntries(
   }),
 )
 
-const BASE = args.base ?? 'http://localhost:3000'
+const BASE = args.base ?? 'http://localhost:3210'
 const PAGES = String(args.pages ?? '/,/records,/forest').split(',')
 const SCHEMES = String(args.schemes ?? 'light,dark').split(',')
 const WAIT = Number(args.wait ?? 1800) // 등장 애니메이션 + 계절 입자가 프레임에 들어올 시간

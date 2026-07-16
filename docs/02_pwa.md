@@ -86,6 +86,18 @@
   localStorage도 새 origin으로 이사해야 한다. → 다음 단계 영향: V2의 "도메인 연결"
   착수 시 데이터 이전 계획이 선행 조건이 된다.
 
+## M2 진행 기록 (2026-07-15)
+
+- 배포 완료: 프로덕션에서 manifest·아이콘 200, CDP installability **오류 없음** 확인.
+- **함정 1 — GitHub→Vercel 자동 배포 누락**: 전날까지 되던 자동 배포가 이날 푸시
+  2건에서 조용히 안 생겼다(GitHub deployments API로 확인). `npx vercel --prod`로
+  수동 배포해 해결. 재발하면 Vercel 대시보드에서 Git 연동 점검.
+- **함정 2 — 설치 버튼이 조용히 실패**: `~/Applications` 소유자가 root라
+  (6/1 INNORIX-EX 설치 여파) Chrome이 앱 심(`Chrome Apps/`)을 못 만들었다.
+  증상: 설치 클릭해도 앱 번들·`Web Applications/` 기록이 안 생김.
+  해결: `sudo chown -R $(whoami):staff ~/Applications` 후 Chrome 재시작·재설치.
+- 남은 것: 사용자 실설치 확인(Dock 아이콘·독립 창·기존 데이터 표시) → M2 마감.
+
 ## 문서 연결 (승인 후 반영)
 
 - `CLAUDE.md` 설계 문서 줄에 추가: `docs/02_pwa.md (PWA 설치)`

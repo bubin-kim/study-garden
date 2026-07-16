@@ -32,6 +32,7 @@ lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-ga
 폰트는 Pretendard (layout.tsx에서 CDN 링크). 레이아웃은 `max-w-2xl` 중앙 정렬 모바일 우선.
 
 설계 문서: docs/01_season-picker.md (계절 테마 선택 — 자동 기본, 원하면 고정. 2026-07-14 구현 완료)
+· docs/02_pwa.md (PWA 설치 — manifest+아이콘, 서비스 워커 없음. 2026-07-15 M1 완료)
 
 ## 디자인 시스템 — 토큰이 유일한 진실
 
@@ -75,7 +76,11 @@ lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-ga
 ## 검증 방법
 
 1. `npx next build` — 통과 필수.
-2. **눈으로 확인 필수.** dev 서버는 보통 :3000에 이미 떠 있다 (두 개 못 띄움 — 새로 켜지 말고 그걸 쓴다. 없으면 `npm run dev`).
+2. **눈으로 확인 필수.** dev 서버는 **전용 고정 포트 :3210**을 쓴다 (`npm run dev`에 -p 3210 내장).
+   다른 프로젝트들이 :3000/:3100을 옮겨 다니며 차지하므로, localStorage(=origin 단위) 데이터가
+   섞이거나 사라져 보이는 사고를 막기 위해 이 포트를 study-garden 전용으로 예약한다.
+   이미 떠 있으면 그걸 쓴다 (같은 프로젝트 dev 서버는 두 개 못 띄움).
+   **실사용 데이터는 배포판(https://study-garden-omega.vercel.app — main 푸시 시 자동 배포)에 있다.**
 3. 스크린샷은 **`.claude/skills/run-study-garden/` 스킬 사용** — 시드·다크·계절·집중 중
    상태까지 명령 하나로 찍는다. 세부는 그 SKILL.md 참조. (수동 시드가 필요하면 키는
    `study-garden:sessions`, 형식 `{id, completedAt(ISO), durationMin}[]`.)

@@ -1,6 +1,6 @@
 # 02 — PWA 설치 지원 (manifest · 설치 아이콘)
 
-> 상태: **승인 · M1 완료 (아이콘 시안 B 확정) — M2(배포 후 실설치 검증) 대기** · 2026-07-15
+> 상태: **구현 완료 (M1+M2)** · 2026-07-15
 
 ## 배경
 
@@ -96,7 +96,8 @@
   (6/1 INNORIX-EX 설치 여파) Chrome이 앱 심(`Chrome Apps/`)을 못 만들었다.
   증상: 설치 클릭해도 앱 번들·`Web Applications/` 기록이 안 생김.
   해결: `sudo chown -R $(whoami):staff ~/Applications` 후 Chrome 재시작·재설치.
-- 남은 것: 사용자 실설치 확인(Dock 아이콘·독립 창·기존 데이터 표시) → M2 마감.
+- M2 마감: 권한 수정 후 설치 성공 — `Chrome Apps.localized/Study Garden.app` 생성,
+  독립 창 실행(app_mode_loader) 파일시스템으로 확인.
 
 ## 문서 연결 (승인 후 반영)
 

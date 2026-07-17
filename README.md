@@ -148,8 +148,9 @@ lib/storage/    localStorage repository
 
 V1은 여기서 종료하고 유지보수 모드로 전환합니다. 다음을 V2 후보로 기록해 둡니다.
 
-- Vercel 배포 및 도메인 연결
-- PWA (manifest, 홈 화면 설치) — 모바일 상시 사용을 위해
+V1 이후 완료: **Vercel 배포**(https://study-garden-omega.vercel.app) · **PWA 설치 지원**(docs/02 — Dock·홈 화면에 앱으로 설치).
+
+- 커스텀 도메인 연결 (주의: 설치·localStorage가 origin 단위라 데이터 이전 계획 선행 — docs/02 리스크 참조)
 - 시트 접근성 마무리 (Escape 닫기, 포커스 트랩)
 - 정원 공유 — 한 달의 정원을 이미지로 내보내기
 - 통계 심화 (주간 리듬, 시간대 분포)

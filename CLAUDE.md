@@ -31,7 +31,7 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 
 app/            페이지 3개: / (정원+타이머), /records (통계·캘린더), /forest (레벨·업적)
   template.tsx  페이지 전환 (fade + rise). 헤더는 layout에 있어 전환에서 제외
   globals.css   디자인 시스템 전체가 여기 있음 (아래 참조)
-components/     garden/ (SVG 정원, GoalFlower), timer/ (FocusPicker), home/ (TodayGoals), records/ (MonthSummaryCard, exportSummary — PNG 내보내기), settings/, ui/ (Button, Sheet, GrowthJourney)
+components/     garden/ (SVG 정원, GoalFlower), timer/ (FocusPicker), home/ (TodayGoals, DemoGardenSheet — docs/04), records/ (MonthSummaryCard, exportSummary — PNG 내보내기), settings/, ui/ (Button, Sheet, GrowthJourney)
 stores/         zustand: session-store(세션 기록), timer-store(타이머), ui-store(시트 열림),
                 season-store(계절 고정 선호), task-store(오늘의 목표), subject-store(과목), exam-store(시험) — 뒤 셋은 docs/03
 lib/            순수 함수만: garden.ts(세션→식물 배치), level.ts(8레벨), stats.ts, time.ts, season.ts, achievements.ts,

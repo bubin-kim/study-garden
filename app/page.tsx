@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Garden } from '@/components/garden/Garden'
+import { DemoGardenSheet } from '@/components/home/DemoGardenSheet'
 import { LevelBar } from '@/components/home/LevelBar'
 import { TodayGoals } from '@/components/home/TodayGoals'
 import { SessionCompleteOverlay } from '@/components/timer/SessionCompleteOverlay'
@@ -28,6 +29,9 @@ export default function HomePage() {
   const today = useTaskStore((s) => s.today)
   const exams = useExamStore((s) => s.exams)
   const dday = today ? nextExam(exams, today) : null
+  const [demoOpen, setDemoOpen] = useState(false)
+  // 예시 정원은 기록이 하나도 없는 첫 방문자에게만 (docs/04)
+  const showDemo = hydrated && sessions.length === 0 && status === 'idle'
 
   const now = new Date()
   const year = now.getFullYear()
@@ -93,6 +97,17 @@ export default function HomePage() {
               : undefined
           }
         />
+        {showDemo && (
+          <div className="mt-1 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setDemoOpen(true)}
+              className="rounded-full px-3 py-1.5 text-[13px] font-medium text-primary transition-colors hover:bg-primary-soft"
+            >
+              예시 정원 구경하기
+            </button>
+          </div>
+        )}
       </section>
 
       <TimerSection />
@@ -106,6 +121,7 @@ export default function HomePage() {
       </div>
 
       <SessionCompleteOverlay />
+      <DemoGardenSheet open={demoOpen} onClose={() => setDemoOpen(false)} />
     </main>
   )
 }

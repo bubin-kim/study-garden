@@ -59,6 +59,7 @@ node shoot.mjs --schemes=dark --wait=2500   # 다크만, 대기 늘리기
   경로의 세션 저장·완료 오버레이·종 렌더. `screenshots/m3/`.
 - `node m4-dday.mjs` — docs/03 M4 시험 D-day: 없음·지난 날짜·가까운 시험 교체·당일 문구·3개 한도·지우기·지난 시험 숨김. `screenshots/m4/`.
 - `node m5-summary.mjs` — docs/03 M5 월간 정리: 합계·공부한 날·과목 순서·비율 합 100·PNG 다운로드·share() 경로·빈 달. `screenshots/m5/`(내보낸 PNG 포함).
+- `node m6-demo.mjs` — docs/04 M2 예시 정원: 버튼 노출·첫 화면 위치·시트 17그루/꽃 8·글자·닫기·localStorage 무변경·세션 있음/집중 중 숨김·reduced-motion. `screenshots/m6/`.
 - `node env-check.mjs --base=https://study-garden-omega.vercel.app` — 공모전 접속 환경 점검: PC 1280·1440·1920 × 라이트/다크(첫 화면 버튼·가로 스크롤·가운데 정렬) + 인앱 브라우저 UA 흉내 3종. `screenshots/env/`. **UA 흉내는 Chrome 엔진 그대로라 실제 WebView의 저장소·다운로드 차이는 못 잡는다** — 실기기 확인은 별도.
 - `node readme-shots.mjs` — README·공모전용 스크린샷을 `docs/screenshots/`에 덮어쓴다. **프로덕션 서버(`next build && npm run start`)로 찍는다** — dev 서버는 좌하단 N 배지가 찍힌다. 시드는 하루 ~30분 연출용.
 

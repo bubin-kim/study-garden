@@ -36,33 +36,39 @@ function SproutShape() {
   return (
     <g>
       <path
-        d="M0 0 C0.4 -6 0.4 -12 0 -17"
+        d="M0 0 C0.4 -6 0.4 -12 0 -18"
         stroke="var(--stem)"
-        strokeWidth="2.4"
+        strokeWidth="3"
         strokeLinecap="round"
         fill="none"
       />
-      <LeafBlade x={0} y={-15.5} angle={8} size={1.05} fill="var(--leaf)" />
-      <LeafBlade x={0} y={-15.5} angle={-8} size={0.95} flip fill="var(--stem)" />
+      <LeafBlade x={0} y={-8} angle={20} size={0.85} fill="var(--stem)" />
+      <LeafBlade x={0} y={-16.5} angle={6} size={1.3} fill="var(--leaf)" />
+      <LeafBlade x={0} y={-16.5} angle={-6} size={1.2} flip fill="var(--leaf)" />
+      <ellipse cx="0" cy="-19.5" rx="2.2" ry="3" fill="var(--stem)" />
     </g>
   )
 }
 
+/** 잎 단계 — 잎이 무성한 작은 덤불. 두 톤 잎이 엇갈려 난다. */
 function LeafShape() {
   return (
     <g>
       <path
-        d="M0 0 C0.6 -12 0.6 -24 0 -34"
+        d="M0 0 C0.6 -12 0.6 -24 0 -36"
         stroke="var(--stem)"
-        strokeWidth="2.6"
+        strokeWidth="3.2"
         strokeLinecap="round"
         fill="none"
       />
-      <LeafBlade x={0} y={-13} angle={14} size={1.15} fill="var(--leaf)" />
-      <LeafBlade x={0} y={-20} angle={-14} size={1.1} flip fill="var(--stem)" />
-      <LeafBlade x={0} y={-27} angle={10} size={0.95} fill="var(--leaf)" />
+      <LeafBlade x={0} y={-6} angle={34} size={1.2} fill="var(--stem)" />
+      <LeafBlade x={0} y={-8} angle={-30} size={1.15} flip fill="var(--stem)" />
+      <LeafBlade x={0} y={-15} angle={16} size={1.45} fill="var(--leaf)" />
+      <LeafBlade x={0} y={-21} angle={-16} size={1.4} flip fill="var(--leaf)" />
+      <LeafBlade x={0} y={-28} angle={10} size={1.2} fill="var(--stem)" />
+      <LeafBlade x={0} y={-31} angle={-10} size={1.1} flip fill="var(--leaf)" />
       <path
-        d="M0 -33 C-2.6 -36 -2.2 -40.5 0 -42.5 C2.2 -40.5 2.6 -36 0 -33 Z"
+        d="M0 -35 C-3.2 -38.6 -2.8 -43.6 0 -46 C2.8 -43.6 3.2 -38.6 0 -35 Z"
         fill="var(--leaf)"
       />
     </g>
@@ -71,7 +77,7 @@ function LeafShape() {
 
 /** 기존(과목 없음) 꽃송이 — 둥근 꽃잎 6장. variant로 색이 달라진다. */
 function DefaultBloom({ variant }: { variant: number }) {
-  const petal = PETAL_COLORS[variant % PETAL_COLORS.length]
+  const petal = PETAL_COLORS[((variant % PETAL_COLORS.length) + PETAL_COLORS.length) % PETAL_COLORS.length]
   return (
     <>
       {PETAL_ANGLES.map((deg) => (
@@ -196,20 +202,41 @@ export function SpeciesIcon({ species, className }: { species: SpeciesId; classN
   )
 }
 
+/** 곁가지 끝의 작은 꽃 — 과목 꽃이면 같은 종, 아니면 다른 계절색으로 피어 알록달록해진다 */
+function SideBloom({ x, y, scale, variant, species }: { x: number; y: number; scale: number; variant: number; species: SpeciesId | null }) {
+  const Bloom = species != null ? SPECIES_BLOOM[species] : null
+  return (
+    <g transform={`translate(${x} ${y}) scale(${scale})`}>
+      {Bloom ? <Bloom /> : <DefaultBloom variant={variant} />}
+    </g>
+  )
+}
+
 function FlowerShape({ variant, species }: { variant: number; species: SpeciesId | null }) {
   const Bloom = species != null ? SPECIES_BLOOM[species] : null
   return (
     <g>
+      <path d="M0 -18 C-4 -22 -8 -26 -10 -32" stroke="var(--stem)" strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M0 -24 C4 -28 7.5 -32 9 -39" stroke="var(--stem)" strokeWidth="2" strokeLinecap="round" fill="none" />
       <path
         d="M0 0 C0.6 -16 0.6 -30 0 -41"
         stroke="var(--stem)"
-        strokeWidth="2.6"
+        strokeWidth="3.2"
         strokeLinecap="round"
         fill="none"
       />
-      <LeafBlade x={0} y={-16} angle={12} size={1.15} fill="var(--leaf)" />
-      <LeafBlade x={0} y={-24} angle={-12} size={1.05} flip fill="var(--stem)" />
-      <g transform="translate(0 -48)">
+      <LeafBlade x={0} y={-6} angle={30} size={1.25} fill="var(--stem)" />
+      <LeafBlade x={0} y={-9} angle={-28} size={1.2} flip fill="var(--leaf)" />
+      <LeafBlade x={0} y={-16} angle={12} size={1.35} fill="var(--leaf)" />
+      <LeafBlade x={0} y={-24} angle={-12} size={1.25} flip fill="var(--stem)" />
+      <g
+        className="plant-sway"
+        style={{ '--sway-a': '2.4deg', animationDuration: '4.4s' } as React.CSSProperties}
+      >
+        <SideBloom x={-10.5} y={-34} scale={0.62} variant={variant + 1} species={species} />
+        <SideBloom x={9.5} y={-41} scale={0.55} variant={variant + 2} species={species} />
+      </g>
+      <g transform="translate(0 -48) scale(1.15)">
         <g
           className="plant-sway"
           style={{ '--sway-a': '2.1deg', animationDuration: '3.9s' } as React.CSSProperties}
@@ -221,8 +248,31 @@ function FlowerShape({ variant, species }: { variant: number; species: SpeciesId
   )
 }
 
+/**
+ * 나무에 핀 꽃(또는 열매) 몇 송이 — 캐노피 위의 색 점. 과목 나무면 과목색이라
+ * 나무가 돼도 과목이 보이고, 과목이 없으면 계절 꽃잎색으로 알록달록하다.
+ */
+function TreeBlossoms({ spots, variant, species }: { spots: [number, number][]; variant: number; species: SpeciesId | null }) {
+  const colors =
+    species != null
+      ? [`var(--sp-${species})`, `var(--sp-${species}-soft)`]
+      : [PETAL_COLORS[variant % 3], PETAL_COLORS[(variant + 1) % 3], 'var(--core)']
+  return (
+    <g>
+      {spots.map(([x, y], i) => (
+        <g key={i} transform={`translate(${x} ${y})`}>
+          {[0, 72, 144, 216, 288].map((deg) => (
+            <circle key={deg} cx="0" cy="-1.5" r="1.45" fill={colors[i % colors.length]} transform={`rotate(${deg})`} />
+          ))}
+          <circle r="0.9" fill="var(--core)" />
+        </g>
+      ))}
+    </g>
+  )
+}
+
 /** 둥근 활엽수 — V1의 기본 나무. */
-function BroadleafTree() {
+function BroadleafTree({ variant, species }: TreeProps) {
   return (
     <g>
       <path
@@ -246,16 +296,19 @@ function BroadleafTree() {
         strokeLinecap="round"
         fill="none"
       />
-      <ellipse cx="-13" cy="-43" rx="13" ry="10" fill="var(--canopy-2)" />
-      <ellipse cx="13" cy="-45" rx="12" ry="10" fill="var(--canopy-2)" />
-      <ellipse cx="0" cy="-53" rx="21" ry="16" fill="var(--canopy)" />
-      <ellipse cx="-7" cy="-59" rx="9.5" ry="6" fill="var(--canopy-2)" opacity="0.55" />
+      <ellipse cx="-16" cy="-41" rx="13" ry="10.5" fill="var(--canopy-2)" />
+      <ellipse cx="16" cy="-43" rx="13" ry="10.5" fill="var(--canopy-2)" />
+      <ellipse cx="-9" cy="-60" rx="13" ry="11" fill="var(--canopy-2)" />
+      <ellipse cx="10" cy="-61" rx="12" ry="10.5" fill="var(--canopy-2)" />
+      <ellipse cx="0" cy="-51" rx="23" ry="17" fill="var(--canopy)" />
+      <ellipse cx="-7" cy="-62" rx="10" ry="6.5" fill="var(--canopy-2)" opacity="0.55" />
+      <TreeBlossoms spots={[[-14, -45], [9, -56], [-3, -66], [16, -44], [-10, -55], [3, -42]]} variant={variant} species={species} />
     </g>
   )
 }
 
 /** 침엽수 — 곡선 변으로 부드럽게 그린 3단 층. 활엽수보다 좁고 크다. */
-function ConiferTree() {
+function ConiferTree({ variant, species }: TreeProps) {
   return (
     <g>
       <path
@@ -266,11 +319,11 @@ function ConiferTree() {
         fill="none"
       />
       <path
-        d="M0 -46 C6 -38 12 -30 17 -24 C6 -26.5 -6 -26.5 -17 -24 C-12 -30 -6 -38 0 -46 Z"
+        d="M0 -46 C7 -38 14 -30 20 -23 C7 -26 -7 -26 -20 -23 C-14 -30 -7 -38 0 -46 Z"
         fill="var(--canopy-2)"
       />
       <path
-        d="M0 -60 C4.5 -53.5 9 -46 13 -40 C4.5 -42.2 -4.5 -42.2 -13 -40 C-9 -46 -4.5 -53.5 0 -60 Z"
+        d="M0 -60 C5.5 -53.5 11 -46 16 -39 C5.5 -41.6 -5.5 -41.6 -16 -39 C-11 -46 -5.5 -53.5 0 -60 Z"
         fill="var(--canopy)"
       />
       <path
@@ -278,12 +331,13 @@ function ConiferTree() {
         fill="var(--canopy)"
       />
       <ellipse cx="-3" cy="-64" rx="3.6" ry="5" fill="var(--canopy-2)" opacity="0.55" />
+      <TreeBlossoms spots={[[-11, -27], [10, -29], [-6, -43], [7, -45], [0, -58]]} variant={variant} species={species} />
     </g>
   )
 }
 
 /** 아치형 — 가지가 양옆으로 벌어지고 캐노피가 넓게 얹힌 우산 실루엣. 셋 중 가장 낮고 넓다. */
-function ArchTree() {
+function ArchTree({ variant, species }: TreeProps) {
   return (
     <g>
       <path
@@ -307,20 +361,27 @@ function ArchTree() {
         strokeLinecap="round"
         fill="none"
       />
-      <ellipse cx="-19" cy="-41" rx="12" ry="8" fill="var(--canopy-2)" />
-      <ellipse cx="18" cy="-43" rx="12.5" ry="8" fill="var(--canopy-2)" />
-      <ellipse cx="0" cy="-47" rx="24" ry="10" fill="var(--canopy)" />
-      <ellipse cx="8" cy="-52" rx="9" ry="5" fill="var(--canopy-2)" opacity="0.55" />
+      <ellipse cx="-20" cy="-41" rx="13" ry="9" fill="var(--canopy-2)" />
+      <ellipse cx="19" cy="-43" rx="13.5" ry="9" fill="var(--canopy-2)" />
+      <ellipse cx="-6" cy="-54" rx="14" ry="8" fill="var(--canopy-2)" />
+      <ellipse cx="0" cy="-47" rx="26" ry="11.5" fill="var(--canopy)" />
+      <ellipse cx="8" cy="-53" rx="9" ry="5" fill="var(--canopy-2)" opacity="0.55" />
+      <TreeBlossoms spots={[[-20, -43], [-6, -50], [9, -47], [21, -45], [0, -56]]} variant={variant} species={species} />
     </g>
   )
 }
 
+interface TreeProps {
+  variant: number
+  species: SpeciesId | null
+}
+
 /** 나무 수종은 꽃잎 색과 같은 방식으로 variant(세션 id 해시)에서 결정된다. */
-function TreeShape({ variant }: { variant: number }) {
+function TreeShape({ variant, species }: TreeProps) {
   const kind = variant % 3
-  if (kind === 1) return <ConiferTree />
-  if (kind === 2) return <ArchTree />
-  return <BroadleafTree />
+  if (kind === 1) return <ConiferTree variant={variant} species={species} />
+  if (kind === 2) return <ArchTree variant={variant} species={species} />
+  return <BroadleafTree variant={variant} species={species} />
 }
 
 interface PlantProps {
@@ -362,7 +423,7 @@ export function Plant({ stage, variant = 0, species = null, delay = 0 }: PlantPr
         {stage === 'sprout' && <SproutShape />}
         {stage === 'leaf' && <LeafShape />}
         {stage === 'flower' && <FlowerShape variant={variant} species={species} />}
-        {stage === 'tree' && <TreeShape variant={variant} />}
+        {stage === 'tree' && <TreeShape variant={variant} species={species} />}
       </g>
     </motion.g>
   )

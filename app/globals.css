@@ -111,26 +111,26 @@ html[data-season="winter"] {
 @media (prefers-color-scheme: dark) {
   :root,
   html[data-season="spring"] {
-    --bg: #191b17;
-    --surface: #22251f;
+    --bg: #23151d;
+    --surface: #2e1e27;
     --primary: #8bab7a;
     --on-primary: #161c13;
     --primary-soft: #2c3529;
     --accent: #c9939b;
     --ink: #eceae2;
     --muted: #97968a;
-    --line: #31342c;
+    --line: #3f2c36;
 
-    --ground: #2a3226;
-    --ground-2: #232a20;
-    --stem: #7fa06f;
-    --leaf: #93b47f;
+    --ground: #2f3717;
+    --ground-2: #282f13;
+    --stem: #819c6c;
+    --leaf: #9bb57b;
     --petal: #c88f97;
     --petal-2: #dbadb2;
     --core: #dcc98f;
     --trunk: #97795a;
-    --canopy: #7ba268;
-    --canopy-2: #8fb67c;
+    --canopy: #a0b47f;
+    --canopy-2: #b3c291;
 
     /* 과목 식물 종 — 다크: 배경·땅 대비 4.94~7.84, 종끼리 ΔE ≥ 34, 적록색약 시뮬 ΔE ≥ 10.1 */
     --sp-0: #f0806f;
@@ -154,13 +154,13 @@ html[data-season="winter"] {
   }
 
   html[data-season="summer"] {
-    --bg: #171a15;
-    --surface: #202520;
+    --bg: #0e1e16;
+    --surface: #17281f;
     --accent: #86b795;
-    --line: #2d332a;
+    --line: #24382d;
     --primary-soft: #293226;
-    --ground: #262f21;
-    --ground-2: #1f271c;
+    --ground: #18341e;
+    --ground-2: #132c19;
     --stem: #6f9c60;
     --leaf: #83af6f;
     --petal: #d9b35c;
@@ -172,13 +172,13 @@ html[data-season="winter"] {
   }
 
   html[data-season="autumn"] {
-    --bg: #1b1814;
-    --surface: #252119;
+    --bg: #23170d;
+    --surface: #2e2115;
     --accent: #d09b62;
-    --line: #363026;
+    --line: #3f2f22;
     --primary-soft: #2f2d22;
-    --ground: #2d2a1e;
-    --ground-2: #262318;
+    --ground: #3c2a0b;
+    --ground-2: #332308;
     --stem: #8f9c62;
     --leaf: #a9ad70;
     --petal: #d38e58;
@@ -190,13 +190,13 @@ html[data-season="winter"] {
   }
 
   html[data-season="winter"] {
-    --bg: #15181b;
-    --surface: #1f2327;
+    --bg: #101b26;
+    --surface: #192531;
     --accent: #92abbf;
-    --line: #2b3138;
+    --line: #263442;
     --primary-soft: #252d27;
-    --ground: #262d34;
-    --ground-2: #1f262d;
+    --ground: #1c303e;
+    --ground-2: #172935;
     --stem: #7b957f;
     --leaf: #90ab94;
     --petal: #a9bccd;

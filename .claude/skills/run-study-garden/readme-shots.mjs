@@ -51,6 +51,32 @@ const tasks = [
 const exams = [{ id: 'x1', name: '기말고사', date: plus(18) }]
 
 const browser = await launch()
+
+// --seasons: 홈(자란 정원)만 4계절 × 라이트/다크로 → home-<계절>-<scheme>.png (공모전 대표 이미지용)
+if (process.argv.includes('--seasons')) {
+  for (const scheme of ['light', 'dark']) {
+    const { ctx, page } = await openPage(browser, scheme)
+    await gotoApp(page)
+    await page.evaluate(([s, t, sub, ex]) => {
+      localStorage.clear()
+      localStorage.setItem('study-garden:sessions', s)
+      localStorage.setItem('study-garden:tasks', t)
+      localStorage.setItem('study-garden:subjects', sub)
+      localStorage.setItem('study-garden:exams', ex)
+    }, [JSON.stringify(sessions), JSON.stringify(tasks), JSON.stringify(subjects), JSON.stringify(exams)])
+    await page.reload({ waitUntil: 'networkidle' })
+    await page.waitForTimeout(2000)
+    for (const season of ['spring', 'summer', 'autumn', 'winter']) {
+      await page.evaluate((s) => (document.documentElement.dataset.season = s), season)
+      await page.waitForTimeout(2500) // 계절 입자가 프레임에 들어올 시간
+      await page.screenshot({ path: join(OUT, `home-${season}-${scheme}.png`) })
+    }
+    await ctx.close()
+  }
+  console.log(`저장: ${OUT} (4계절 × 라이트/다크)`)
+  await finish(browser)
+}
+
 for (const scheme of ['light', 'dark']) {
   const { ctx, page } = await openPage(browser, scheme, { acceptDownloads: true })
   await gotoApp(page)

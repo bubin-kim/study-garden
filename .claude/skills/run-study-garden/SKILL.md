@@ -61,7 +61,7 @@ node shoot.mjs --schemes=dark --wait=2500   # 다크만, 대기 늘리기
 - `node m5-summary.mjs` — docs/03 M5 월간 정리: 합계·공부한 날·과목 순서·비율 합 100·PNG 다운로드·share() 경로·빈 달. `screenshots/m5/`(내보낸 PNG 포함).
 - `node m6-demo.mjs` — docs/04 M2 예시 정원: 버튼 노출·첫 화면 위치·시트 17그루/꽃 8·글자·닫기·localStorage 무변경·세션 있음/집중 중 숨김·reduced-motion. `screenshots/m6/`.
 - `node env-check.mjs --base=https://study-garden-omega.vercel.app` — 공모전 접속 환경 점검: PC 1280·1440·1920 × 라이트/다크(첫 화면 버튼·가로 스크롤·가운데 정렬) + 인앱 브라우저 UA 흉내 3종. `screenshots/env/`. **UA 흉내는 Chrome 엔진 그대로라 실제 WebView의 저장소·다운로드 차이는 못 잡는다** — 실기기 확인은 별도.
-- `node readme-shots.mjs` — README·공모전용 스크린샷을 `docs/screenshots/`에 덮어쓴다. **프로덕션 서버(`next build && npm run start`)로 찍는다** — dev 서버는 좌하단 N 배지가 찍힌다. 시드는 하루 ~30분 연출용.
+- `node readme-shots.mjs` — README·공모전용 스크린샷을 `docs/screenshots/`에 덮어쓴다. **프로덕션 서버(`next build && npm run start`)로 찍는다** — dev 서버는 좌하단 N 배지가 찍힌다. 시드는 하루 ~30분 연출용. `--seasons`를 붙이면 홈만 4계절 × 라이트/다크(`home-<계절>-<scheme>.png`) 8장 — 배포판 대상 권장(`--base=https://study-garden-omega.vercel.app`). 계절 입자는 "가끔" 지나가는 설계라 대부분 프레임에 안 잡힌다.
 
 ## Gotchas
 

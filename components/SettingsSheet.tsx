@@ -2,6 +2,8 @@
 
 import { Check } from 'lucide-react'
 import { Sheet } from '@/components/ui/Sheet'
+import { ExamSection } from '@/components/settings/ExamSection'
+import { SubjectSection } from '@/components/settings/SubjectSection'
 import { DURATION_OPTIONS, useTimerStore } from '@/stores/timer-store'
 import { useSeasonStore } from '@/stores/season-store'
 import { useUiStore } from '@/stores/ui-store'
@@ -82,6 +84,12 @@ export function SettingsSheet() {
           진행 중인 타이머에는 다음 세션부터 적용돼요.
         </p>
       )}
+
+      <SectionLabel>과목</SectionLabel>
+      <SubjectSection />
+
+      <SectionLabel>시험</SectionLabel>
+      <ExamSection />
 
       <SectionLabel>정원의 계절</SectionLabel>
       <ul>

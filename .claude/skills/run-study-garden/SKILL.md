@@ -45,7 +45,30 @@ node shoot.mjs --schemes=dark --wait=2500   # 다크만, 대기 늘리기
 - 페이지별로 라이트/다크 나란히, base64 데이터 URI로 인라인 (외부 요청 차단됨)
 - 같은 아티팩트를 갱신할 때는 **같은 파일 경로로 재게시**해야 URL이 유지된다
 
+## 기능별 시나리오 스크립트
+
+- `node m1-goals.mjs` — docs/03 M1 오늘의 목표: 가져오기·추가·핵심 지정·한도·달성·새로고침 유지를
+  라이트/다크로 검사(✓/✗ 출력)하고 `screenshots/m1/`에 단계별 스크린샷. 실패나 콘솔 에러가 있으면 exit 2.
+- `node m2-flowers.mjs` — docs/03 M2 달성 꽃: 꽃 개수·캡션·피어나는 순간·체크 해제·캘린더 표시·
+  지난 날 읽기 전용·reduced-motion 검사 + `screenshots/m2/`에 4계절 × 라이트/다크 정원.
+- `node m3-subjects.mjs` — docs/03 M3 과목: 과목 5개·보관·할 일 과목·무엇을 가꿀까요·복원/tick 두 완료
+  경로의 세션 저장·완료 오버레이·종 렌더. `screenshots/m3/`.
+- `node m4-dday.mjs` — docs/03 M4 시험 D-day: 없음·지난 날짜·가까운 시험 교체·당일 문구·3개 한도·지우기·지난 시험 숨김. `screenshots/m4/`.
+- `node m5-summary.mjs` — docs/03 M5 월간 정리: 합계·공부한 날·과목 순서·비율 합 100·PNG 다운로드·share() 경로·빈 달. `screenshots/m5/`(내보낸 PNG 포함).
+
 ## Gotchas
+
+- **`shoot.mjs`의 시드는 `addInitScript`라 페이지 이동마다 localStorage를 다시 덮어쓴다.**
+  새로고침 후 유지 같은 시나리오는 확인할 수 없다 — 첫 방문에 `page.evaluate`로 한 번만
+  시드하는 `m1-goals.mjs` 방식을 쓴다 (2026-11-25).
+- **문구가 바뀌는 순간을 검사할 땐 `AnimatePresence mode="wait"` 시간을 더한다.** 홈 캡션은 이전
+  문구 0.35s 퇴장 뒤 등장 — 새 문구는 ~430ms부터 보인다. 350ms 검사가 라이트에서만 우연히
+  실패한 적 있음 (2026-11-25).
+- **`page.clock.install()` 뒤 새로고침을 거듭하면 framer 애니메이션이 opacity 0에 멈춘다** —
+  스크린샷이 헤더만 있는 빈 화면이 되는데 `isVisible()`은 opacity를 안 봐서 검사는 통과한다.
+  시계는 필요한 단계 직전에만 설치하고, "보인다" 검사엔 조상 opacity 1 확인을 붙인다 (2026-11-25 재현).
+- 입력창에 타이핑하면 포커스 때문에 페이지가 스크롤된다. `boundingBox()`의 y는 뷰포트
+  기준이라, 스크롤 뒤에 잰 값을 위치 변화로 오해하지 말 것 (2026-11-25 실측).
 
 - **측정 전에 `<title>`이 Study Garden인지 먼저 검증한다.** 이 컴퓨터는 여러 프로젝트의
   dev 서버가 포트를 옮겨 다닌다 — :3210이 아닌 포트를 쓸 일이 생기면 `--base=`로 지정한다.

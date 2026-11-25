@@ -10,6 +10,8 @@
 - **V1 기능 개발은 종료됐다.** 명백한 버그 수정만 기본 허용이고, 기능·디자인 변경은
   사용자 승인 후에만 한다. V2 후보는 README "향후 계획"에 기록되어 있다 — 착수하게 되면
   design-doc 스킬(설계 문서 → 승인 → 구현)로 시작한다.
+  - **예외: docs/03(공부 계획 고도화 — 공모전 제출용) 범위는 2026-11-25 승인됨.**
+    문서의 목표·비목표 밖으로 넓히지 않는다.
 - 감성 기준: **Apple의 정돈됨 + Forest/Finch/동물의 숲 사이의 따뜻함.** 절대 어린아이용 앱처럼 만들지 않는다 — 20대 대학생이 자연스럽게 쓸 수준의 귀여움까지만.
 - 애니메이션은 잔잔하게. "가끔 등장"이 기본값이고, 공부에 방해되면 실패다.
 - 커밋은 요청받았을 때만 한다.
@@ -22,17 +24,21 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS v4 
 app/            페이지 3개: / (정원+타이머), /records (통계·캘린더), /forest (레벨·업적)
   template.tsx  페이지 전환 (fade + rise). 헤더는 layout에 있어 전환에서 제외
   globals.css   디자인 시스템 전체가 여기 있음 (아래 참조)
-components/     garden/ (SVG 정원), timer/, home/, records/, ui/ (Button, Sheet, GrowthJourney)
-stores/         zustand: session-store(세션 기록), timer-store(타이머), ui-store(시트 열림)
-lib/            순수 함수만: garden.ts(세션→식물 배치), level.ts(8레벨), stats.ts, time.ts, season.ts, achievements.ts
+components/     garden/ (SVG 정원, GoalFlower), timer/ (FocusPicker), home/ (TodayGoals), records/ (MonthSummaryCard, exportSummary — PNG 내보내기), settings/, ui/ (Button, Sheet, GrowthJourney)
+stores/         zustand: session-store(세션 기록), timer-store(타이머), ui-store(시트 열림),
+                season-store(계절 고정 선호), task-store(오늘의 목표), subject-store(과목), exam-store(시험) — 뒤 셋은 docs/03
+lib/            순수 함수만: garden.ts(세션→식물 배치), level.ts(8레벨), stats.ts, time.ts, season.ts, achievements.ts,
+                tasks.ts(목표 체크리스트), subjects.ts(과목), dday.ts(시험 D-day), summary.ts(월간 정리) — `npm test`, *.test.ts 옆에 둠, 런타임 import 금지
 lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-garden:duration',
-                'study-garden:season' (계절 고정 — 키 없음이 자동)
+                'study-garden:season' (계절 고정 — 키 없음이 자동), 'study-garden:tasks' (Task[]),
+                'study-garden:subjects' (Subject[]), 'study-garden:exams' (Exam[] — 지난 시험도 보관, 화면에서만 숨김)
 ```
 
 폰트는 Pretendard (layout.tsx에서 CDN 링크). 레이아웃은 `max-w-2xl` 중앙 정렬 모바일 우선.
 
 설계 문서: docs/01_season-picker.md (계절 테마 선택 — 자동 기본, 원하면 고정. 2026-07-14 구현 완료)
 · docs/02_pwa.md (PWA 설치 — manifest+아이콘, 서비스 워커 없음. 2026-07-15 구현 완료)
+· docs/03_study-planner.md (공부 계획 고도화 — 목표 체크리스트·과목 식물·D-day·월간 카드. 2026-11-25 승인, 진행 중)
 
 ## 디자인 시스템 — 토큰이 유일한 진실
 
@@ -42,6 +48,8 @@ lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-ga
 - 그림자: `shadow-card` `shadow-float` `shadow-sheet` `shadow-btn` / 오버레이: `bg-[var(--scrim)]`
 - 라운드: 카드는 항상 `rounded-card` (20px)
 - 식물 전용: `--stem --leaf --petal --petal-2 --core --trunk --canopy --canopy-2 --ground --ground-2` (SVG fill에서 `var(--...)`로 직접 사용)
+- 과목 식물 종 전용: `--sp-0..4` + `--sp-N-soft` — **계절과 무관한 고정색**(과목을 색으로 알아보게).
+  라이트·다크 base 블록에만 정의하고 계절 블록에서 덮지 않는다. 값과 실측 근거는 docs/03 M3 기록.
 
 **금지: 컴포넌트에 hex 색, `rgba(...)` 그림자, `rounded-[20px]` 같은 하드코딩.** 새 색이 필요하면 globals.css에 변수를 추가하고 라이트 4계절 + 다크 4계절 모두에 값을 정의한 뒤 유틸리티로 쓴다. (유일한 예외: 흰색 하이라이트 같은 진짜 불변 색.)
 
@@ -60,6 +68,8 @@ lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-ga
 - **무한 반복 애니메이션은 CSS keyframes** (`plant-sway`, `amb-*`, `glow-breathe` — globals.css). 식물 수십 개가 동시에 움직이므로 framer-motion 무한 루프 금지.
   - 흔들림 진폭은 `--sway-a` CSS 변수로 개체별 조절. 단계별 값은 `Plant.tsx`의 `SWAY` 테이블.
 - **등장·스프링·상태 전환은 framer-motion** (개화, 버튼 바운스, 시트, 페이지 전환).
+  - **SVG에서 기준점은 `style={{ originX, originY }}`로 준다.** `style.transformOrigin`은 framer가
+    `50% 50%`로 덮어쓴다 (2026-11-25 DOM 실측 — docs/03 M2 기록).
 - 계절 입자(벚꽃잎·반딧불·낙엽·눈송이)는 **넷 다 DOM에 렌더하고 CSS `html[data-season=...]`로 하나만 표시**한다. JS로 계절 분기하지 않는다 (하이드레이션 안전).
 - 모든 장식 애니메이션은 `prefers-reduced-motion: reduce`에서 꺼져야 한다 (globals.css 마지막 블록에 추가).
 
@@ -75,7 +85,7 @@ lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-ga
 
 ## 검증 방법
 
-1. `npx next build` — 통과 필수.
+1. `npx next build` — 통과 필수. `npm test` — lib 순수 함수 골든 테스트 (Node 내장 `node --test`).
 2. **눈으로 확인 필수.** dev 서버는 **전용 고정 포트 :3210**을 쓴다 (`npm run dev`에 -p 3210 내장).
    다른 프로젝트들이 :3000/:3100을 옮겨 다니며 차지하므로, localStorage(=origin 단위) 데이터가
    섞이거나 사라져 보이는 사고를 막기 위해 이 포트를 study-garden 전용으로 예약한다.

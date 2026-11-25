@@ -17,6 +17,10 @@ Study Garden은 공부 타이머 앱입니다. 집중 세션을 끝까지 마치
 기능은 세 화면이 전부입니다 — **정원과 타이머**, **기록과 캘린더**, **숲과 업적**.
 회원가입도, 서버도, 알림도 없습니다. 열면 바로 정원이 있고, 30분 뒤에 식물이 하나 늘어 있습니다.
 
+2026년 11월, 학생이 **"오늘 무엇을 할지"부터 "한 달을 어떻게 보냈는지"까지** 정원 안에서
+이어서 볼 수 있도록 공부 계획 기능을 더했습니다 — 오늘의 목표, 과목별 꽃, 시험 D-day,
+월간 정원 정리 카드([설계 문서](docs/03_study-planner.md)).
+
 ## 문제 정의 — 왜 만들었는가
 
 이 프로젝트는 두 가지 질문에서 시작했습니다.
@@ -37,8 +41,18 @@ Forest는 나무를 심고, Finch는 새를 키우고, 동물의 숲은 섬을 �
 
 > 사용자가 앱을 열었을 때 '공부 앱을 켰다'가 아니라 **'내 정원을 돌보러 왔다'**고 느끼게 할 것.
 
-기능을 늘리는 대신 뺐고(백엔드 없음, 설정은 집중 시간과 정원의 계절 둘뿐), 개발 기간의 절반 이상을
+기능을 늘리는 대신 뺐고(백엔드 없음, V1의 설정은 집중 시간과 정원의 계절 둘뿐), 개발 기간의 절반 이상을
 기능이 아니라 여백·색·움직임·문장을 다듬는 데 썼습니다.
+
+### 공부 계획 고도화 — 무엇을 더했고, 무엇을 더하지 않았나
+
+타이머 앱은 "얼마나" 했는지는 기록하지만 "무엇을" 했는지는 모릅니다. 학생에게 필요한 건
+매일의 작은 목표와, 그 목표가 시험이라는 큰 목적지로 이어진다는 감각이었습니다. 그래서 정원의
+은유를 그대로 확장했습니다 — **목표를 다 이루면 꽃이 피고, 과목마다 다른 꽃이 자라고, 시험까지
+남은 날이 정원 위에 적혀 있고, 한 달이 끝나면 정원 한 장으로 돌아봅니다.**
+
+더하지 않은 것도 정했습니다: 알림, 반복 할 일, 장기 플래너, 달성하지 못한 날의 페널티(시드는 식물·경고
+문구). 목표를 못 이뤄도 잃는 것은 없습니다 — 이 앱의 정원은 벌을 주지 않습니다.
 
 ## 핵심 기능
 
@@ -54,31 +68,68 @@ Forest는 나무를 심고, Finch는 새를 키우고, 동물의 숲은 섬을 �
 - **숲** — 평생 누적 공간. 총 공부 시간, 씨앗→나무 5단계 성장 여정으로 표현되는 레벨,
   8개의 업적(잠긴 업적은 안개 속에, 획득하면 꽃이 피듯 등장).
 
+### 공부 계획 (docs/03)
+
+- **오늘의 목표** — 할 일을 적고 그중 1~3개를 핵심(별)으로 정합니다. 핵심을 모두 마친 날엔
+  정원 앞줄에 별 모양 **달성 꽃**이 한 송이 핍니다. 어제 못 한 일은 버튼 하나로 가져옵니다.
+  지난 날은 읽기 전용이라, 나중에 체크해서 꽃을 만들 수 없습니다.
+- **과목별 꽃** — 과목을 최대 5개 등록하면 과목마다 튤립·해바라기·라벤더·수국·동백이 배정됩니다.
+  타이머를 시작할 때 "무엇을 가꿀까요?"에서 할 일이나 과목을 고르면 그 세션의 식물이 그 꽃으로 핍니다.
+  정원만 봐도 이 달의 과목 분포가 보입니다. 과목 색은 라이트·다크 모두와 적록색약 시뮬레이션에서
+  구분되도록 실측해 골랐습니다.
+- **시험 D-day** — 시험을 적어 두면 정원 위에 "기말고사까지 18일" 한 줄. 남은 날만 보여줍니다.
+- **월간 정원 정리** — 기록 페이지에서 그달의 가꾼 시간·공부한 날·식물·목표 꽃·과목 비율을 한 장으로.
+  **이미지로 저장**하면 정원이 들어간 PNG가 만들어지고, 모바일에선 공유 시트가 열립니다.
+
 ## 스크린샷
 
 | 홈 — 정원과 타이머 | 다크모드 | 집중 중 |
 |---|---|---|
-| ![홈 라이트](docs/screenshots/home-light.png) | ![홈 다크](docs/screenshots/home-dark.png) | ![집중 중](docs/screenshots/home-running-dark.png) |
+| ![홈 라이트](docs/screenshots/home-light.png) | ![홈 다크](docs/screenshots/home-dark.png) | ![집중 중](docs/screenshots/home-running-light.png) |
 
-| 첫 방문 | 기록 | 숲 |
+| 오늘의 목표 | 무엇을 가꿀까요? | 과목·시험 설정 |
 |---|---|---|
-| ![엠티 스테이트](docs/screenshots/home-empty-light.png) | ![기록](docs/screenshots/records-light.png) | ![숲](docs/screenshots/forest-light.png) |
+| ![오늘의 목표](docs/screenshots/goals-light.png) | ![무엇을 가꿀까요](docs/screenshots/focus-picker-light.png) | ![설정](docs/screenshots/settings-dark.png) |
+
+| 기록 — 달성한 날 꽃 표시 | 월간 정리 카드 | 내보낸 이미지 |
+|---|---|---|
+| ![기록](docs/screenshots/records-light.png) | ![월간 정리](docs/screenshots/summary-card-dark.png) | ![내보낸 PNG](docs/screenshots/summary-export-dark.png) |
+
+| 첫 방문 | 숲 | 숲 (다크) |
+|---|---|---|
+| ![엠티 스테이트](docs/screenshots/home-empty-light.png) | ![숲](docs/screenshots/forest-light.png) | ![숲 다크](docs/screenshots/forest-dark.png) |
+
+## 실행 방법
+
+```bash
+npm ci
+npm run dev      # http://localhost:3210 (전용 고정 포트 — localStorage가 포트별로 따로라서)
+npm test         # lib 골든 테스트 59개 (Node 24 내장 node --test)
+npx next build   # 정적 빌드
+```
+
+배포판: https://study-garden-omega.vercel.app (main 푸시 시 자동 배포). 데이터는 브라우저에만 저장됩니다.
 
 ## 기술 스택
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · framer-motion · zustand
 
 백엔드 없음 — 모든 데이터는 localStorage에 저장됩니다. 정적 페이지 4장으로 빌드됩니다.
+공부 계획 기능은 **새 라이브러리 없이** 만들었습니다(PNG 내보내기 포함).
 
 ## 아키텍처
 
 ```
 app/            페이지 3개 + template.tsx(페이지 전환) + globals.css(디자인 시스템 전체)
-components/     garden/(SVG 정원·식물) · timer/ · records/ · ui/
-stores/         zustand — sessions(기록) · timer(진행 상태) · ui
-lib/            순수 함수 — 세션→식물 배치, 레벨, 통계, 계절, 업적
-lib/storage/    localStorage repository
+components/     garden/(SVG 정원·식물·달성 꽃) · timer/ · home/(오늘의 목표) · records/(정리 카드·PNG) · settings/ · ui/
+stores/         zustand — sessions · timer · ui · season · tasks · subjects · exams
+lib/            순수 함수 — 세션→식물 배치, 레벨, 통계, 계절, 업적, 목표 판정, 과목, D-day, 월간 정리
+                (*.test.ts 골든 테스트가 옆에)
+lib/storage/    localStorage repository — 기존 키는 그대로, 새 키 3개(tasks·subjects·exams)만 추가
 ```
+
+- **하위 호환.** 고도화 전의 기록(과목 없는 세션)은 고도화 후에도 **픽셀 단위로 같은 정원**을
+  그립니다 — V1 커밋과 현재를 같은 데이터로 렌더해 스크린샷 바이트 비교로 확인했습니다.
 
 - **디자인 토큰이 유일한 진실.** 색·그림자·라운드는 전부 `globals.css`의 CSS 변수로 정의되고,
   Tailwind `@theme inline`을 거쳐 유틸리티가 됩니다. 컴포넌트에는 hex 코드가 없습니다.
@@ -100,6 +151,14 @@ lib/storage/    localStorage repository
 - **포기 확인 UI** — 경고 문구가 나타나도 버튼이 밀리지 않도록 자리를 항상 예약해 두는
   구조(레이아웃 시프트 실측 2px). 포기를 고민하는 순간이 이 앱에서 감정적으로 가장 중요한
   화면이라고 판단했습니다.
+- **라이브러리 없는 PNG 내보내기** — 화면의 정원 SVG를 복제해 계산된 색(fill·stroke·opacity)을
+  속성으로 굳힌 뒤 카드 전체를 SVG로 조립 → `<canvas>` → PNG. 이미지 안에서는 CSS가 적용되지
+  않으므로 CSS 변수·계절 선택자·애니메이션을 전부 값으로 바꿔야 합니다. 글자는 SVG `<text>`가 웹폰트를
+  못 불러오는 문제 때문에 `document.fonts` 로드 후 canvas에 직접 씁니다.
+- **골든 테스트** — 판정이 들어가는 순수 함수(목표 달성, 과거 날짜 잠금, 꽃 배치 결정성, 과목 종 배정,
+  D-day 날짜 경계, 월간 비율)는 Node 내장 `node --test`로 59개 케이스를 검증합니다. 기대값 표는 구현이
+  스스로 만들지 않고 사람이 먼저 검수·승인한 뒤 테스트로 옮겼고, 규칙을 일부러 깨뜨린 변형에서 해당
+  케이스가 실패하는지도 확인했습니다. 화면 흐름은 Playwright 시나리오 5개(139개 검사)로 돌립니다.
 - **접근성** — 보조 텍스트 대비 4.9:1, primary 버튼 흰 글자 4.8:1(WCAG AA), 전역
   focus-visible 링, 44px 탭 타깃, safe-area 대응.
 
@@ -113,6 +172,10 @@ lib/storage/    localStorage repository
 | 진행 중 세션이 새로고침에 증발 | 타이머 상태가 메모리에만 존재. 종료 시각을 영속화하고 부재 중 완료를 복귀 시 정산 |
 | QA가 엉뚱한 결과를 냄 | :3000에 **다른 프로젝트의 dev 서버**가 떠 있었다. 측정 전에 `<title>`로 대상부터 검증하는 습관이 생김 |
 | 수십 그루 흔들림이 무거움 | framer-motion 무한 루프 대신 CSS keyframes + 개체별 `--sway-a` 변수로 GPU에 위임 |
+| 꽃이 뿌리가 아니라 가운데에서 자라남 | SVG에서 framer-motion이 `style.transformOrigin`을 `50% 50%`로 덮어쓴다(DOM 실측). `originX`/`originY`로 지정해 해결 — 기존 식물 등장에도 있던 버그를 같이 고침 |
+| 과목 꽃이 색약 사용자에게 구분 안 됨 | 첫 팔레트에서 수국(파랑)·라벤더가 적록색약 시뮬레이션 색차 2.5로 겹침. 후보 3개를 대비·색차·색약 시뮬로 측정해 수국을 청록으로 옮김 (최소 색차 10.1 이상) |
+| 내보낸 이미지 글꼴이 "여기선 맞는데" | 개발 Mac에 Pretendard가 **로컬 설치**돼 있어 SVG 텍스트 방식도 정상으로 보였다. 로컬 글꼴을 빼고 재측정하니 다른 기기에선 대체 글꼴로 떨어짐 → canvas 방식 채택 |
+| 테스트는 통과인데 스크린샷이 빈 화면 | Playwright 가짜 시계 설치 후 새로고침을 거듭하면 애니메이션이 opacity 0에 멈춘다. `isVisible()`은 opacity를 보지 않아 통과했었다 → 조상 opacity까지 검사 추가 |
 
 ## 배운 점 — What I Learned
 
@@ -148,12 +211,14 @@ lib/storage/    localStorage repository
 
 V1은 여기서 종료하고 유지보수 모드로 전환합니다. 다음을 V2 후보로 기록해 둡니다.
 
-V1 이후 완료: **Vercel 배포**(https://study-garden-omega.vercel.app) · **PWA 설치 지원**(docs/02 — Dock·홈 화면에 앱으로 설치).
+V1 이후 완료: **Vercel 배포**(https://study-garden-omega.vercel.app) · **PWA 설치 지원**(docs/02 — Dock·홈 화면에 앱으로 설치)
+· **공부 계획 고도화**(docs/03 — 오늘의 목표·과목별 꽃·시험 D-day·월간 정원 정리와 이미지 공유).
 
 - 커스텀 도메인 연결 (주의: 설치·localStorage가 origin 단위라 데이터 이전 계획 선행 — docs/02 리스크 참조)
 - 시트 접근성 마무리 (Escape 닫기, 포커스 트랩)
-- 정원 공유 — 한 달의 정원을 이미지로 내보내기
-- 통계 심화 (주간 리듬, 시간대 분포)
+- 나무 단계에서도 과목이 보이게 — 지금은 꽃 단계에서만 과목 색이 보이고, 공부를 많이 한 달은 이른
+  식물이 대부분 나무가 된다 (docs/03 측정 계획 2, 실사용 데이터로 판단 예정)
+- 통계 심화 (주간 리듬, 시간대 분포) — 월간 정리 카드가 과목 비율까지 담당
 - 서비스명·브랜딩 재검토
 
 ---

@@ -16,12 +16,16 @@ const localKey = (iso: string) => {
 test('K1 두 번 호출해도 같은 결과', () => {
   assert.deepEqual(demoGarden(), demoGarden())
 })
-test('K2 현재 시각과 무관 — 2026-12-01, 2027-06-15', () => {
+test('K2 현재 시각과 무관 — 2026-12-01, 2027-06-15', async () => {
   const base = demoGarden()
   for (const now of ['2026-12-01T09:00:00+09:00', '2027-06-15T21:00:00+09:00']) {
     mock.timers.enable({ apis: ['Date'], now: new Date(now) })
     try {
       assert.deepEqual(demoGarden(), base)
+      // 모듈 최상위에서 날짜를 읽는 경우도 잡도록, 가짜 시계 아래에서 모듈을 새로 불러 한 번 더 본다
+      // (2026-11-26 변형 검사: 최상위 `new Date().getFullYear()`는 위 호출만으로는 통과했다)
+      const fresh = (await import(`./demo.ts?k2=${encodeURIComponent(now)}`)) as typeof import('./demo.ts')
+      assert.deepEqual(fresh.demoGarden(), base)
     } finally {
       mock.timers.reset()
     }

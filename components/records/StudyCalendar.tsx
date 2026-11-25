@@ -17,6 +17,8 @@ interface StudyCalendarProps {
   year: number
   month: number
   records: Map<string, DayRecord>
+  /** 목표를 달성한 날 — 칸 모서리에 작은 꽃 (docs/03) */
+  achieved?: Set<string>
   selected: string | null
   onSelect(key: string | null): void
 }
@@ -25,6 +27,7 @@ export function StudyCalendar({
   year,
   month,
   records,
+  achieved,
   selected,
   onSelect,
 }: StudyCalendarProps) {
@@ -57,8 +60,8 @@ export function StudyCalendar({
               key={key}
               disabled={isFuture}
               onClick={() => onSelect(isSelected ? null : key)}
-              aria-label={`${month + 1}월 ${day}일`}
-              className={`flex aspect-square items-center justify-center rounded-[9px] text-[11px] transition-all ${
+              aria-label={`${month + 1}월 ${day}일${achieved?.has(key) ? ' · 목표 달성' : ''}`}
+              className={`relative flex aspect-square items-center justify-center rounded-[9px] text-[11px] transition-all ${
                 isFuture ? 'text-muted/40' : intensityCls(minutes)
               } ${minutes >= 90 ? 'font-medium text-on-primary' : 'text-ink/60'} ${
                 isSelected
@@ -69,6 +72,23 @@ export function StudyCalendar({
               }`}
             >
               {day}
+              {achieved?.has(key) && (
+                <svg
+                  aria-hidden
+                  viewBox="-12 -12 24 24"
+                  className="absolute right-[3px] top-[3px] size-2.5"
+                >
+                  {[0, 72, 144, 216, 288].map((deg) => (
+                    <path
+                      key={deg}
+                      d="M0 0 C-3.8 -3 -3.6 -8.4 0 -11 C3.6 -8.4 3.8 -3 0 0 Z"
+                      fill="var(--petal)"
+                      transform={`rotate(${deg})`}
+                    />
+                  ))}
+                  <circle r="2.8" fill="var(--core)" />
+                </svg>
+              )}
             </button>
           )
         })}

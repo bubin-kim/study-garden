@@ -1,4 +1,4 @@
-import type { PlantData, PlantStage, Session } from '@/types'
+import type { GoalFlowerData, PlantData, PlantStage, Session, SpeciesId } from '@/types'
 
 /**
  * 식물은 항상 새싹으로 심어지고, "심은 이후 누적된 공부 시간(분)"으로 자란다.
@@ -30,6 +30,8 @@ export function getGardenPlants(
   sessions: Session[],
   year: number,
   month: number,
+  /** subjectId → 과목 식물 종 (docs/03 M3). 없으면 모든 식물이 기존 모습 */
+  speciesOf: (subjectId: string | undefined) => SpeciesId | null = () => null,
 ): PlantData[] {
   const sorted = [...sessions].sort((a, b) =>
     a.completedAt.localeCompare(b.completedAt),
@@ -53,6 +55,7 @@ export function getGardenPlants(
       plantedAt: sorted[i].completedAt,
       stage: stageFor(growth[i]),
       variant: hashCode(sorted[i].id) % 3,
+      species: speciesOf(sorted[i].subjectId),
       // 황금비 수열로 정원 전체에 고르게 흩뿌린다
       x: (0.11 + idx * GOLDEN) % 1,
       depth: (hashCode(sorted[i].id + 'd') % 100) / 100,
@@ -60,4 +63,16 @@ export function getGardenPlants(
     idx++
   }
   return plants
+}
+
+/**
+ * 달성한 날마다 정원 앞줄에 꽃 한 송이 (docs/03 M2). 날짜 목록만으로 결정적으로 계산된다.
+ * 세션 식물(0.11 시작)과 겹치지 않도록 다른 위상(0.42)에서 황금비 수열을 시작한다.
+ */
+export function getGoalFlowers(dates: string[]): GoalFlowerData[] {
+  return [...dates].sort().map((date, i) => ({
+    date,
+    x: (0.42 + i * GOLDEN) % 1,
+    tilt: ((hashCode(date) % 200) - 100) / 100,
+  }))
 }

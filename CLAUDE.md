@@ -35,7 +35,7 @@ components/     garden/ (SVG 정원, GoalFlower), timer/ (FocusPicker), home/ (T
 stores/         zustand: session-store(세션 기록), timer-store(타이머), ui-store(시트 열림),
                 season-store(계절 고정 선호), task-store(오늘의 목표), subject-store(과목), exam-store(시험) — 뒤 셋은 docs/03
 lib/            순수 함수만: garden.ts(세션→식물 배치), level.ts(8레벨), stats.ts, time.ts, season.ts, achievements.ts,
-                tasks.ts(목표 체크리스트), subjects.ts(과목), dday.ts(시험 D-day), summary.ts(월간 정리) — `npm test`, *.test.ts 옆에 둠, 런타임 import 금지
+                tasks.ts(목표 체크리스트), subjects.ts(과목), dday.ts(시험 D-day), summary.ts(월간 정리), demo.ts(예시 정원 — docs/04) — `npm test`, *.test.ts 옆에 둠, 런타임 import 금지
 lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-garden:duration',
                 'study-garden:season' (계절 고정 — 키 없음이 자동), 'study-garden:tasks' (Task[]),
                 'study-garden:subjects' (Subject[]), 'study-garden:exams' (Exam[] — 지난 시험도 보관, 화면에서만 숨김)

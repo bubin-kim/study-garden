@@ -1,19 +1,12 @@
 #!/usr/bin/env node
 // docs/03 M4 — 시험 D-day 시나리오 검증 + 스크린샷.
 //   node m4-dday.mjs [--base=http://localhost:3210]
-import { chromium } from 'playwright-core'
-import { mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { check, dateKey as key, finish, gotoApp, launch, openPage, outDir, seen } from './lib.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const BASE = process.argv.find((a) => a.startsWith('--base='))?.slice(7) ?? 'http://localhost:3210'
-const OUT = join(here, 'screenshots', 'm4')
-mkdirSync(OUT, { recursive: true })
+const OUT = outDir('m4')
 
 const now = new Date()
-const key = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const plus = (n) => key(new Date(now.getFullYear(), now.getMonth(), now.getDate() + n))
 const sessions = Array.from({ length: 14 }, (_, i) => ({
   id: `seed-${i}`,
@@ -21,27 +14,10 @@ const sessions = Array.from({ length: 14 }, (_, i) => ({
   durationMin: 60,
 }))
 
-const checks = []
-const check = (name, ok, detail = '') => {
-  checks.push(ok)
-  console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`)
-}
-const browser = await chromium.launch({ channel: 'chrome', headless: true })
-let errors = 0
+const browser = await launch()
 
 for (const scheme of ['light', 'dark']) {
-  const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  const page = await ctx.newPage()
-  page.on('pageerror', (e) => {
-    errors++
-    console.error(`[${scheme}] page error: ${e.message}`)
-  })
-  page.on('console', (m) => {
-    if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) {
-      errors++
-      console.error(`[${scheme}] console: ${m.text()}`)
-    }
-  })
+  const { ctx, page } = await openPage(browser, scheme)
   const ls = (k) => page.evaluate((x) => JSON.parse(localStorage.getItem(x) ?? 'null'), k)
   const ddayLine = page.locator('main section p').filter({ hasText: /까지 \d+일$|날이에요$/ })
   const ddayText = async () => ((await ddayLine.count()) ? (await ddayLine.first().innerText()).trim() : null)
@@ -60,8 +36,7 @@ for (const scheme of ['light', 'dark']) {
     await page.waitForTimeout(200)
   }
 
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' })
-  if ((await page.title()) !== 'Study Garden') throw new Error('다른 앱이 떠 있음')
+  await gotoApp(page)
   await page.evaluate((s) => {
     localStorage.clear()
     localStorage.setItem('study-garden:sessions', s)
@@ -86,7 +61,7 @@ for (const scheme of ['light', 'dark']) {
   // 3. 12일 뒤 기말고사 추가
   await addExam('기말고사', plus(12))
   check(`[${scheme}] 시험 저장`, (await ls('study-garden:exams'))?.length === 1)
-  check(`[${scheme}] 설정 목록 '12일 남음'`, await page.getByText(/12일 남음/).isVisible())
+  check(`[${scheme}] 설정 목록 '12일 남음'`, await seen(page.getByText(/12일 남음/)))
   await closeSettings()
   check(`[${scheme}] 홈 '기말고사까지 12일'`, (await ddayText()) === '기말고사까지 12일', String(await ddayText()))
   const sbAfter = await startBottom()
@@ -102,7 +77,7 @@ for (const scheme of ['light', 'dark']) {
   // 5. 오늘 시험 → 당일 문구, 3개면 입력 숨김
   await openSettings()
   await addExam('모의고사', plus(0))
-  check(`[${scheme}] 3개면 입력 숨김 + 안내`, (await page.getByRole('textbox', { name: '새 시험 이름' }).count()) === 0 && (await page.getByText('시험은 3개까지 적어 둘 수 있어요').isVisible()))
+  check(`[${scheme}] 3개면 입력 숨김 + 안내`, (await page.getByRole('textbox', { name: '새 시험 이름' }).count()) === 0 && (await seen(page.getByText('시험은 3개까지 적어 둘 수 있어요'))))
   await page.getByText('시험은 3개까지').scrollIntoViewIfNeeded()
   await page.screenshot({ path: join(OUT, `02-settings-exams-${scheme}.png`) })
   await closeSettings()
@@ -113,7 +88,7 @@ for (const scheme of ['light', 'dark']) {
   await openSettings()
   await page.getByRole('button', { name: '모의고사 지우기' }).click()
   await page.waitForTimeout(200)
-  check(`[${scheme}] 지우면 입력 다시 보임`, await page.getByRole('textbox', { name: '새 시험 이름' }).isVisible())
+  check(`[${scheme}] 지우면 입력 다시 보임`, await seen(page.getByRole('textbox', { name: '새 시험 이름' })))
   await closeSettings()
   check(`[${scheme}] 지운 뒤 '중간 발표까지 1일'`, (await ddayText()) === '중간 발표까지 1일')
 
@@ -128,13 +103,10 @@ for (const scheme of ['light', 'dark']) {
   check(`[${scheme}] 지난 시험만 → D-day 줄 없음`, (await ddayText()) === null)
   await openSettings()
   check(`[${scheme}] 지난 시험은 설정 목록에서도 숨김`, (await page.getByText('지난 퀴즈').count()) === 0)
-  check(`[${scheme}] 지난 시험 3개여도 추가 가능 (한도는 앞으로의 시험만)`, await page.getByRole('textbox', { name: '새 시험 이름' }).isVisible())
+  check(`[${scheme}] 지난 시험 3개여도 추가 가능 (한도는 앞으로의 시험만)`, await seen(page.getByRole('textbox', { name: '새 시험 이름' })))
   await closeSettings()
   check(`[${scheme}] 지난 시험 데이터 유지`, (await ls('study-garden:exams')).length === 3)
 
   await ctx.close()
 }
-await browser.close()
-const failed = checks.filter((c) => !c).length
-console.log(`\n${checks.length - failed}/${checks.length} 통과 · 콘솔 에러 ${errors}건`)
-process.exit(failed || errors ? 2 : 0)
+await finish(browser)

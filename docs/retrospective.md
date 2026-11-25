@@ -150,7 +150,7 @@ README 전체는 저장소의 `README.md`가 최신본이다 (중복 보관하�
 
 ---
 
-## 환경 개선 환류 (제안 — 수정은 승인 후)
+## 환경 개선 환류 (2026-11-25 사용자 승인 · 4개 모두 반영)
 
 1. **전역 규칙(~/.claude/CLAUDE.md) — "마일스톤 승인 = 그 자리에서 커밋 제안"**: 이번엔 커밋 요청 규칙 때문에 M1~M5가 한꺼번에
    쌓였고, 공유 파일을 마일스톤별로 나눌 수 없었다(중간 커밋 단독 빌드 불가). 승인 게이트마다 "커밋할까요?"를 묻는 한 줄을 추가.
@@ -160,3 +160,11 @@ README 전체는 저장소의 `README.md`가 최신본이다 (중복 보관하�
    lib는 import type만" 규칙 (④-5).
 4. **run-study-garden 스킬 — 공용 helper + opacity 검사 기본 내장**: 시나리오 6개의 중복을 helper로, "보임" 검사는 조상 opacity
    포함을 기본값으로 (⑥, ④-2).
+
+**반영 결과 (2026-11-25)**
+- 1·2 → `~/.claude/CLAUDE.md` "일하는 방식"에 승인 게이트 커밋 질문, 작업 품질 기준 14번에 개발 기기 환경 배제 재측정.
+- 3 → `~/.claude/skills/new-project/templates/CLAUDE.md.tpl` §8에 `node --test` 기본 설정, SKILL.md 6단계(M1)에 포함 지시.
+  "`@/` 런타임 import는 타입 제거 실행에서 깨진다"는 근거는 프로브로 재확인(`ERR_MODULE_NOT_FOUND: Cannot find package '@/lib'`).
+- 4 → `.claude/skills/run-study-garden/lib.mjs` 신설, m1~m5·readme-shots가 사용 (스크립트 합계 1002 → 826줄, lib 포함).
+  `isVisible()` 검사 18곳과 m3의 인라인 opacity 검사 2곳을 `seen()`으로 교체. 회귀: 시나리오 139/139 · 콘솔 에러 0 (dev), readme-shots 19장 생성.
+  `seen()` 음성 확인: `main` opacity 0에서 isVisible true / seen false. shoot.mjs는 인자 체계·HTTP 응답 감시가 달라 그대로 둠.

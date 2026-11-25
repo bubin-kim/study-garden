@@ -2,18 +2,11 @@
 // docs/03 M1 — 오늘의 목표 체크리스트 시나리오 검증 + 스크린샷.
 // 시드는 첫 방문에 한 번만 넣는다(addInitScript 아님) — 새로고침 후 유지를 확인하기 위해.
 //   node m1-goals.mjs [--base=http://localhost:3210]
-import { chromium } from 'playwright-core'
-import { mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { check, dateKey as key, finish, gotoApp, launch, openPage, outDir, seen } from './lib.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const BASE = process.argv.find((a) => a.startsWith('--base='))?.slice(7) ?? 'http://localhost:3210'
-const OUT = join(here, 'screenshots', 'm1')
-mkdirSync(OUT, { recursive: true })
+const OUT = outDir('m1')
 
-const key = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const now = new Date()
 const today = key(now)
 const yesterday = key(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
@@ -29,25 +22,10 @@ const yTasks = [
   { id: 'y3', date: yesterday, title: '끝낸 일', core: false, done: true, createdAt: '2026-01-01T00:00:02Z' },
 ]
 
-const checks = []
-const check = (name, ok, detail = '') => {
-  checks.push({ name, ok })
-  console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`)
-}
-
-const browser = await chromium.launch({ channel: 'chrome', headless: true })
-let errors = 0
+const browser = await launch()
 
 for (const scheme of ['light', 'dark']) {
-  const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  const page = await ctx.newPage()
-  page.on('pageerror', (e) => (errors++, console.error(`[${scheme}] page error: ${e.message}`)))
-  page.on('console', (m) => {
-    if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) {
-      errors++
-      console.error(`[${scheme}] console: ${m.text()}`)
-    }
-  })
+  const { ctx, page } = await openPage(browser, scheme)
   const shot = async (name) => {
     await page.waitForTimeout(500)
     await page.screenshot({ path: join(OUT, `${name}-${scheme}.png`), fullPage: true })
@@ -59,8 +37,7 @@ for (const scheme of ['light', 'dark']) {
     return Math.round(b.y + b.height)
   }
 
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' })
-  if ((await page.title()) !== 'Study Garden') throw new Error('다른 앱이 떠 있음')
+  await gotoApp(page)
   await page.evaluate(
     ([s, t]) => {
       localStorage.setItem('study-garden:sessions', s)
@@ -81,7 +58,7 @@ for (const scheme of ['light', 'dark']) {
   await header.click()
   await page.waitForTimeout(400)
   const carryBtn = page.getByRole('button', { name: /어제 남은 할 일 2개 가져오기/ })
-  check(`[${scheme}] 가져오기 버튼에 미완료 2개 표시`, await carryBtn.isVisible())
+  check(`[${scheme}] 가져오기 버튼에 미완료 2개 표시`, await seen(carryBtn))
   await shot('02-expanded-empty')
   await carryBtn.click()
   await page.waitForTimeout(300)
@@ -96,7 +73,7 @@ for (const scheme of ['light', 'dark']) {
   }
   await page.waitForTimeout(300)
   check(`[${scheme}] 추가 후 항목 4개`, (await card.getByRole('checkbox').count()) === 4)
-  check(`[${scheme}] 핵심 0개 안내 문구`, await page.getByText('별을 눌러 오늘 꼭 해낼').isVisible())
+  check(`[${scheme}] 핵심 0개 안내 문구`, await seen(page.getByText('별을 눌러 오늘 꼭 해낼')))
 
   // 4. 핵심 2개 지정
   const stars = card.getByRole('button', { name: '핵심 목표로 정하기' })
@@ -153,8 +130,4 @@ for (const scheme of ['light', 'dark']) {
 
   await ctx.close()
 }
-await browser.close()
-
-const failed = checks.filter((c) => !c.ok).length
-console.log(`\n${checks.length - failed}/${checks.length} 통과 · 콘솔 에러 ${errors}건`)
-process.exit(failed || errors ? 2 : 0)
+await finish(browser)

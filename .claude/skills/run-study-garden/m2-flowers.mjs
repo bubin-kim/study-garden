@@ -3,21 +3,13 @@
 //   node m2-flowers.mjs [--base=http://localhost:3210] [--seasons=spring,summer,autumn,winter]
 // 시드: 이번 달 지난 날 5일 달성(3·7·12·18·22일 — 오늘 이전만), 10일은 미달성(핵심 1/2),
 //       오늘은 핵심 1개 미완료 → 체크해서 "피어나는 순간"을 본다.
-import { chromium } from 'playwright-core'
-import { mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { arg, BASE, check, dateKey as key, finish, gotoApp, launch, openPage, outDir, seen } from './lib.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d
-const BASE = arg('base', 'http://localhost:3210')
 const SEASONS = arg('seasons', 'spring,summer,autumn,winter').split(',')
-const OUT = join(here, 'screenshots', 'm2')
-mkdirSync(OUT, { recursive: true })
+const OUT = outDir('m2')
 
 const now = new Date()
-const key = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const dayOf = (n) => key(new Date(now.getFullYear(), now.getMonth(), n))
 const today = key(now)
 const ACH_DAYS = [3, 7, 12, 18, 22].filter((n) => n < now.getDate())
@@ -38,29 +30,11 @@ const sessions = Array.from({ length: 14 }, (_, i) => ({
   durationMin: 60,
 }))
 
-const checks = []
-const check = (name, ok, detail = '') => {
-  checks.push(ok)
-  console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`)
-}
-const browser = await chromium.launch({ channel: 'chrome', headless: true })
-let errors = 0
+const browser = await launch()
 
 async function open(scheme, reducedMotion = 'no-preference') {
-  const ctx = await browser.newContext({ colorScheme: scheme, reducedMotion, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  const page = await ctx.newPage()
-  page.on('pageerror', (e) => {
-    errors++
-    console.error(`[${scheme}] page error: ${e.message}`)
-  })
-  page.on('console', (m) => {
-    if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) {
-      errors++
-      console.error(`[${scheme}] console: ${m.text()}`)
-    }
-  })
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' })
-  if ((await page.title()) !== 'Study Garden') throw new Error('다른 앱이 떠 있음')
+  const { ctx, page } = await openPage(browser, scheme, { reducedMotion })
+  await gotoApp(page)
   await page.evaluate(([s, t]) => {
     localStorage.setItem('study-garden:sessions', s)
     localStorage.setItem('study-garden:tasks', t)
@@ -77,7 +51,7 @@ for (const scheme of ['light', 'dark']) {
   const { ctx, page } = await open(scheme)
   const n = ACH_DAYS.length
   check(`[${scheme}] 홈 정원 꽃 ${n}송이 (미달성일 제외)`, (await flowers(page)) === n, `DOM ${await flowers(page)}`)
-  check(`[${scheme}] 홈 캡션 '꽃 ${n}송이'`, await page.getByText(`꽃 ${n}송이`).isVisible())
+  check(`[${scheme}] 홈 캡션 '꽃 ${n}송이'`, await seen(page.getByText(`꽃 ${n}송이`)))
 
   // 2. 피어나는 순간: 오늘 마지막 핵심 체크
   await page.getByRole('button', { name: /오늘의 목표/ }).click()
@@ -85,11 +59,11 @@ for (const scheme of ['light', 'dark']) {
   await page.getByRole('checkbox', { name: '전공 강의 복습 완료' }).click()
   // 캡션 교체는 mode="wait": 이전 문구 0.35s 퇴장 후 등장 → 새 문구는 ~430ms부터 (실측)
   await page.waitForTimeout(900)
-  check(`[${scheme}] 달성 순간 안내 문구`, await page.getByText('오늘의 목표를 모두 가꿨어요 · 꽃 한 송이가 피었어요').isVisible())
+  check(`[${scheme}] 달성 순간 안내 문구`, await seen(page.getByText('오늘의 목표를 모두 가꿨어요 · 꽃 한 송이가 피었어요')))
   check(`[${scheme}] 꽃 ${n + 1}송이로 증가`, (await flowers(page)) === n + 1)
   await page.screenshot({ path: join(OUT, `home-bloom-${scheme}.png`) })
   await page.waitForTimeout(4100)
-  check(`[${scheme}] 4.2초 뒤 캡션 복귀`, await page.getByText(`꽃 ${n + 1}송이`).isVisible())
+  check(`[${scheme}] 4.2초 뒤 캡션 복귀`, await seen(page.getByText(`꽃 ${n + 1}송이`)))
 
   // 3. 체크 해제하면 꽃 사라짐 → 다시 체크해도 안내는 다시 뜸(전이 기준)
   await page.getByRole('checkbox', { name: '전공 강의 복습 완료' }).click()
@@ -107,13 +81,13 @@ for (const scheme of ['light', 'dark']) {
   if (ACH_DAYS.length) {
     await page.locator(`button[aria-label^="${now.getMonth() + 1}월 ${ACH_DAYS[0]}일"]`).click()
     await page.waitForTimeout(400)
-    check(`[${scheme}] 달성한 날 선택 → '목표를 모두 가꾼 날이에요'`, await page.getByText('목표를 모두 가꾼 날이에요').isVisible())
+    check(`[${scheme}] 달성한 날 선택 → '목표를 모두 가꾼 날이에요'`, await seen(page.getByText('목표를 모두 가꾼 날이에요')))
     check(`[${scheme}] 지난 날 목록에 체크 버튼 없음 (읽기 전용)`, (await page.getByRole('checkbox').count()) === 0)
   }
   if (MISS_DAY) {
     await page.locator(`button[aria-label^="${now.getMonth() + 1}월 ${MISS_DAY}일"]`).click()
     await page.waitForTimeout(400)
-    check(`[${scheme}] 미달성일 → '그날의 목표 · 1/2'`, await page.getByText('그날의 목표 · 1/2').isVisible())
+    check(`[${scheme}] 미달성일 → '그날의 목표 · 1/2'`, await seen(page.getByText('그날의 목표 · 1/2')))
   }
   await page.screenshot({ path: join(OUT, `records-${scheme}.png`), fullPage: true })
 
@@ -135,7 +109,4 @@ for (const scheme of ['light', 'dark']) {
   check(`[${scheme}] reduced-motion: 등장 transform 없음/완료`, !/scale\(0/.test(scale), `style="${scale}"`)
   await rm.ctx.close()
 }
-await browser.close()
-const failed = checks.filter((c) => !c).length
-console.log(`\n${checks.length - failed}/${checks.length} 통과 · 콘솔 에러 ${errors}건`)
-process.exit(failed || errors ? 2 : 0)
+await finish(browser)

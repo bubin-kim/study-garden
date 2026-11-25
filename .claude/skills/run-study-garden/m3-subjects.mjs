@@ -1,42 +1,19 @@
 #!/usr/bin/env node
 // docs/03 M3 — 과목·식물 종·"무엇을 가꿀까요" 시나리오 검증 + 스크린샷.
 //   node m3-subjects.mjs [--base=http://localhost:3210]
-import { chromium } from 'playwright-core'
-import { mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { check, finish, gotoApp, launch, openPage, outDir, seen } from './lib.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const BASE = process.argv.find((a) => a.startsWith('--base='))?.slice(7) ?? 'http://localhost:3210'
-const OUT = join(here, 'screenshots', 'm3')
-mkdirSync(OUT, { recursive: true })
+const OUT = outDir('m3')
 
-const checks = []
-const check = (name, ok, detail = '') => {
-  checks.push(ok)
-  console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`)
-}
-const browser = await chromium.launch({ channel: 'chrome', headless: true })
-let errors = 0
+const browser = await launch()
 
 for (const scheme of ['light', 'dark']) {
-  const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  const page = await ctx.newPage()
-  page.on('pageerror', (e) => {
-    errors++
-    console.error(`[${scheme}] page error: ${e.message}`)
-  })
-  page.on('console', (m) => {
-    if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) {
-      errors++
-      console.error(`[${scheme}] console: ${m.text()}`)
-    }
-  })
+  const { ctx, page } = await openPage(browser, scheme)
   const shot = (name, full = true) => page.screenshot({ path: join(OUT, `${name}-${scheme}.png`), fullPage: full })
   const ls = (k) => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? 'null'), k)
 
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' })
-  if ((await page.title()) !== 'Study Garden') throw new Error('다른 앱이 떠 있음')
+  await gotoApp(page)
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: 'networkidle' })
   await page.waitForTimeout(1000)
@@ -53,16 +30,16 @@ for (const scheme of ['light', 'dark']) {
   }
   const subs = await ls('study-garden:subjects')
   check(`[${scheme}] 과목 5개 저장, 종 0~4 고유`, subs.length === 5 && new Set(subs.map((s) => s.species)).size === 5, JSON.stringify(subs.map((s) => s.species)))
-  check(`[${scheme}] 5개면 추가 입력 숨김 + 안내`, (await subjInput.count()) === 0 && (await page.getByText('과목은 5개까지 가꿀 수 있어요').isVisible()))
+  check(`[${scheme}] 5개면 추가 입력 숨김 + 안내`, (await subjInput.count()) === 0 && (await seen(page.getByText('과목은 5개까지 가꿀 수 있어요'))))
   await shot('01-settings-subjects', false)
 
   // 2. 보관 (두 번 눌러야) → 4개 활성, 새로 추가하면 보관된 종을 다시 쓴다
   const archiveBtn = page.getByRole('button', { name: '보관' }).nth(4)
   await archiveBtn.click()
-  check(`[${scheme}] 보관 한 번 → 확인 문구`, await page.getByRole('button', { name: '한 번 더 누르면 보관' }).isVisible())
+  check(`[${scheme}] 보관 한 번 → 확인 문구`, await seen(page.getByRole('button', { name: '한 번 더 누르면 보관' })))
   await page.getByRole('button', { name: '한 번 더 누르면 보관' }).click()
   await page.waitForTimeout(200)
-  check(`[${scheme}] 보관 후 안내 '보관한 과목의 꽃은…'`, await page.getByText('보관한 과목의 꽃은 정원에 그대로 남아 있어요').isVisible())
+  check(`[${scheme}] 보관 후 안내 '보관한 과목의 꽃은…'`, await seen(page.getByText('보관한 과목의 꽃은 정원에 그대로 남아 있어요')))
   await page.getByRole('textbox', { name: '새 과목' }).fill('화학')
   await page.getByRole('textbox', { name: '새 과목' }).press('Enter')
   await page.waitForTimeout(200)
@@ -97,12 +74,12 @@ for (const scheme of ['light', 'dark']) {
   await shot('03-focus-picker', false)
   await page.getByRole('dialog').getByRole('button', { name: /선형대수 3장/ }).click()
   await page.waitForTimeout(500)
-  check(`[${scheme}] 칩 라벨이 고른 할 일`, await page.getByRole('button', { name: /선형대수 3장/ }).first().isVisible())
+  check(`[${scheme}] 칩 라벨이 고른 할 일`, await seen(page.getByRole('button', { name: /선형대수 3장/ }).first()))
   await page.getByRole('button', { name: '집중 시작' }).click()
   await page.waitForTimeout(300)
   await page.reload({ waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
-  check(`[${scheme}] 진행 중 새로고침 → 칩에 할 일 유지`, await page.locator('section').filter({ hasText: '일시정지' }).getByText('선형대수 3장').isVisible())
+  check(`[${scheme}] 진행 중 새로고침 → 칩에 할 일 유지`, await seen(page.locator('section').filter({ hasText: '일시정지' }).getByText('선형대수 3장')))
 
   // 5. 자리를 비운 사이 끝남(복원 경로) → 세션에 과목·할 일 저장 + 오버레이에서 할 일 체크
   await page.evaluate(() => {
@@ -115,12 +92,7 @@ for (const scheme of ['light', 'dark']) {
   const sessions = await ls('study-garden:sessions')
   check(`[${scheme}] 세션에 subjectId·taskId 저장`, sessions.length === 1 && sessions[0].subjectId === math.id && sessions[0].taskId === tasks[0].id)
   const ovCheck = page.getByRole('checkbox', { name: /이 할 일도 마쳤어요/ })
-  // isVisible()은 opacity를 보지 않는다 — 실제로 보이는지 조상 opacity까지 확인
-  const shown = await ovCheck.evaluate((el) => {
-    for (let e = el; e && e !== document.body; e = e.parentElement) if (getComputedStyle(e).opacity !== '1') return false
-    return true
-  })
-  check(`[${scheme}] 완료 오버레이에 할 일 체크 (opacity 1까지)`, shown)
+  check(`[${scheme}] 완료 오버레이에 할 일 체크 (opacity 1까지)`, await seen(ovCheck))
   await shot('04-complete-overlay', false)
   await ovCheck.click()
   await page.waitForTimeout(200)
@@ -152,13 +124,8 @@ for (const scheme of ['light', 'dark']) {
   //    애니메이션이 opacity 0에 멈춰 빈 화면이 찍힌다 — 실측)
   const subjSnapshot = await ls('study-garden:subjects')
   await ctx.close()
-  const ctx2 = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  const page2 = await ctx2.newPage()
-  page2.on('pageerror', (e) => {
-    errors++
-    console.error(`[${scheme}] page error: ${e.message}`)
-  })
-  await page2.goto(BASE + '/', { waitUntil: 'networkidle' })
+  const { ctx: ctx2, page: page2 } = await openPage(browser, scheme)
+  await gotoApp(page2)
   const now = new Date()
   const at = (d) => new Date(now.getFullYear(), now.getMonth(), d, 9).toISOString()
   const seeded = [
@@ -172,17 +139,10 @@ for (const scheme of ['light', 'dark']) {
   }, [JSON.stringify(seeded), JSON.stringify(subjSnapshot)])
   await page2.reload({ waitUntil: 'networkidle' })
   await page2.waitForTimeout(1500)
-  const gardenShown = await page2.locator('svg[aria-label="정원"]').first().evaluate((el) => {
-    for (let e = el; e && e !== document.body; e = e.parentElement) if (getComputedStyle(e).opacity !== '1') return false
-    return true
-  })
-  check(`[${scheme}] 정원이 실제로 보임 (opacity 1까지)`, gardenShown)
+  check(`[${scheme}] 정원이 실제로 보임 (opacity 1까지)`, await seen(page2.locator('svg[aria-label="정원"]').first()))
   const species = await page2.locator('svg[aria-label="정원"] [data-species]').evaluateAll((es) => es.map((e) => e.getAttribute('data-species')).sort().join(','))
   check(`[${scheme}] 보관 과목 포함 6세션 → 종 표시 (국어=4, 화학=4)`, species === '0,1,2,3,4,4', species)
   await page2.screenshot({ path: join(OUT, `05-garden-species-${scheme}.png`), fullPage: true })
   await ctx2.close()
 }
-await browser.close()
-const failed = checks.filter((c) => !c).length
-console.log(`\n${checks.length - failed}/${checks.length} 통과 · 콘솔 에러 ${errors}건`)
-process.exit(failed || errors ? 2 : 0)
+await finish(browser)

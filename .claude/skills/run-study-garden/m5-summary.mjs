@@ -2,19 +2,13 @@
 // docs/03 M5 — 월간 정리 카드 + PNG 내보내기 시나리오 검증 + 스크린샷.
 //   node m5-summary.mjs [--base=http://localhost:3210]
 // (측정 계획 4의 글자 방식 비교 결과 PNG는 screenshots/m5/measure/에 보존 — 비교용 훅은 결정 후 제거)
-import { chromium } from 'playwright-core'
-import { mkdirSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { check, dateKey as key, finish, gotoApp, launch, openPage, outDir, seen } from './lib.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const BASE = process.argv.find((a) => a.startsWith('--base='))?.slice(7) ?? 'http://localhost:3210'
-const OUT = join(here, 'screenshots', 'm5')
-mkdirSync(OUT, { recursive: true })
+const OUT = outDir('m5')
 
 const now = new Date()
-const key = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const at = (day, h = 9) => new Date(now.getFullYear(), now.getMonth(), Math.min(day, now.getDate()), h).toISOString()
 const subjects = [
   { id: 'math', name: '선형대수', species: 0 },
@@ -34,29 +28,11 @@ const studyDays = new Set(sessions.filter((s) => s.id !== 'prev').map((s) => key
 const T = (n, id) => ({ id, date: key(new Date(now.getFullYear(), now.getMonth(), n)), title: '핵심', core: true, done: true, createdAt: '2026-01-01T00:00:00Z' })
 const tasks = [3, 7].filter((n) => n < now.getDate()).map((n, i) => T(n, `t${i}`))
 
-const checks = []
-const check = (name, ok, detail = '') => {
-  checks.push(ok)
-  console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`)
-}
-const browser = await chromium.launch({ channel: 'chrome', headless: true })
-let errors = 0
+const browser = await launch()
 
 for (const scheme of ['light', 'dark']) {
-  const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, acceptDownloads: true })
-  const page = await ctx.newPage()
-  page.on('pageerror', (e) => {
-    errors++
-    console.error(`[${scheme}] page error: ${e.message}`)
-  })
-  page.on('console', (m) => {
-    if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) {
-      errors++
-      console.error(`[${scheme}] console: ${m.text()}`)
-    }
-  })
-  await page.goto(BASE + '/records', { waitUntil: 'networkidle' })
-  if ((await page.title()) !== 'Study Garden') throw new Error('다른 앱이 떠 있음')
+  const { ctx, page } = await openPage(browser, scheme, { acceptDownloads: true })
+  await gotoApp(page, '/records')
   await page.evaluate(([s, t, sub]) => {
     localStorage.clear()
     localStorage.setItem('study-garden:sessions', s)
@@ -67,7 +43,7 @@ for (const scheme of ['light', 'dark']) {
   await page.waitForTimeout(1500)
 
   const card = page.getByRole('region', { name: '한 달 정리' })
-  check(`[${scheme}] 정리 카드 보임`, await card.isVisible())
+  check(`[${scheme}] 정리 카드 보임`, await seen(card))
   const txt = await card.innerText()
   check(`[${scheme}] 가꾼 시간 12시간 (지난달 제외)`, txt.includes('12시간'), txt.split('\n').slice(0, 4).join(' | '))
   check(`[${scheme}] 공부한 날 ${studyDays}일`, txt.includes(`${studyDays}일`))
@@ -88,7 +64,7 @@ for (const scheme of ['light', 'dark']) {
   const w = png.readUInt32BE(16)
   const h = png.readUInt32BE(20)
   check(`[${scheme}] PNG 다운로드 (${dl.suggestedFilename()})`, png.subarray(1, 4).toString() === 'PNG' && /^study-garden-\d{4}-\d{2}\.png$/.test(dl.suggestedFilename()), `${w}×${h}`)
-  check(`[${scheme}] '이미지로 저장했어요' 안내`, await page.getByText('이미지로 저장했어요').isVisible())
+  check(`[${scheme}] '이미지로 저장했어요' 안내`, await seen(page.getByText('이미지로 저장했어요')))
 
   // 공유 가능 환경 → navigator.share에 PNG 파일 1개
   await page.evaluate(() => {
@@ -107,16 +83,12 @@ for (const scheme of ['light', 'dark']) {
 
 // 지난달·빈 달: 세션 없는 달은 카드 없음
 {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } })
-  const page = await ctx.newPage()
-  await page.goto(BASE + '/records', { waitUntil: 'networkidle' })
+  const { ctx, page } = await openPage(browser)
+  await gotoApp(page, '/records')
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: 'networkidle' })
   await page.waitForTimeout(1000)
   check('기록 없는 달 → 정리 카드 없음', (await page.getByRole('region', { name: '한 달 정리' }).count()) === 0)
   await ctx.close()
 }
-await browser.close()
-const failed = checks.filter((c) => !c).length
-console.log(`\n${checks.length - failed}/${checks.length} 통과 · 콘솔 에러 ${errors}건`)
-process.exit(failed || errors ? 2 : 0)
+await finish(browser)

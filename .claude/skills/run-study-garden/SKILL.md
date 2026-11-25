@@ -47,6 +47,10 @@ node shoot.mjs --schemes=dark --wait=2500   # 다크만, 대기 늘리기
 
 ## 기능별 시나리오 스크립트
 
+공용 helper는 `lib.mjs` — 인자(`--base=`)·`check()`·에러 감시(`openPage`)·앱 확인(`gotoApp`)·
+`seed()`·`readLS()`·`dateKey()`·`finish()`(집계 + exit 2). **"보인다" 검사는 `isVisible()` 대신 항상
+`seen(locator)`** — 조상 opacity 1까지 확인한다. 새 시나리오는 m4-dday.mjs를 본보기로 이 helper로 쓴다.
+
 - `node m1-goals.mjs` — docs/03 M1 오늘의 목표: 가져오기·추가·핵심 지정·한도·달성·새로고침 유지를
   라이트/다크로 검사(✓/✗ 출력)하고 `screenshots/m1/`에 단계별 스크린샷. 실패나 콘솔 에러가 있으면 exit 2.
 - `node m2-flowers.mjs` — docs/03 M2 달성 꽃: 꽃 개수·캡션·피어나는 순간·체크 해제·캘린더 표시·
@@ -67,7 +71,8 @@ node shoot.mjs --schemes=dark --wait=2500   # 다크만, 대기 늘리기
   실패한 적 있음 (2026-11-25).
 - **`page.clock.install()` 뒤 새로고침을 거듭하면 framer 애니메이션이 opacity 0에 멈춘다** —
   스크린샷이 헤더만 있는 빈 화면이 되는데 `isVisible()`은 opacity를 안 봐서 검사는 통과한다.
-  시계는 필요한 단계 직전에만 설치하고, "보인다" 검사엔 조상 opacity 1 확인을 붙인다 (2026-11-25 재현).
+  시계는 필요한 단계 직전에만 설치하고, "보인다" 검사는 `lib.mjs`의 `seen()`을 쓴다 (2026-11-25 재현 —
+  `main` opacity 0에서 isVisible true / seen false 확인).
 - 입력창에 타이핑하면 포커스 때문에 페이지가 스크롤된다. `boundingBox()`의 y는 뷰포트
   기준이라, 스크롤 뒤에 잰 값을 위치 변화로 오해하지 말 것 (2026-11-25 실측).
 

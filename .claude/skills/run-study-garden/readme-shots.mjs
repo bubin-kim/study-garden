@@ -3,20 +3,14 @@
 //   node readme-shots.mjs [--base=http://localhost:3210] [--out=../../../docs/screenshots]
 // 시드는 데모용이며 골든 케이스가 아니다. 하루 30분 안팎의 가벼운 달로 맞췄다 — 하루 1시간 이상이면
 // 이른 식물이 대부분 나무가 되어 과목 꽃색이 거의 안 보인다(2026-11-25 실측: 26시간 달 → 28그루 중 꽃 4~5).
-import { chromium } from 'playwright-core'
 import { mkdirSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, resolve } from 'node:path'
+import { arg, BASE, dateKey as key, finish, gotoApp, here, launch, openPage } from './lib.mjs'
 
-const here = dirname(fileURLToPath(import.meta.url))
-const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=')[1] ?? d
-const BASE = arg('base', 'http://localhost:3210')
 const OUT = resolve(here, arg('out', '../../../docs/screenshots'))
 mkdirSync(OUT, { recursive: true })
 
 const now = new Date()
-const key = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const day = (n) => new Date(now.getFullYear(), now.getMonth(), n)
 const plus = (n) => key(new Date(now.getFullYear(), now.getMonth(), now.getDate() + n))
 const today = key(now)
@@ -56,15 +50,10 @@ const tasks = [
 ]
 const exams = [{ id: 'x1', name: '기말고사', date: plus(18) }]
 
-const browser = await chromium.launch({ channel: 'chrome', headless: true })
-let errors = 0
+const browser = await launch()
 for (const scheme of ['light', 'dark']) {
-  const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, acceptDownloads: true })
-  const page = await ctx.newPage()
-  page.on('pageerror', () => errors++)
-  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource/.test(m.text()) && errors++)
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' })
-  if ((await page.title()) !== 'Study Garden') throw new Error('다른 앱이 떠 있음')
+  const { ctx, page } = await openPage(browser, scheme, { acceptDownloads: true })
+  await gotoApp(page)
   await page.evaluate(([s, t, sub, ex]) => {
     localStorage.clear()
     localStorage.setItem('study-garden:sessions', s)
@@ -125,16 +114,13 @@ for (const scheme of ['light', 'dark']) {
 }
 // 첫 방문(엠티 스테이트)
 {
-  const ctx = await browser.newContext({ colorScheme: 'light', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  const page = await ctx.newPage()
-  page.on('pageerror', () => errors++)
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' })
+  const { ctx, page } = await openPage(browser, 'light')
+  await gotoApp(page)
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: 'networkidle' })
   await page.waitForTimeout(2000)
   await page.screenshot({ path: join(OUT, 'home-empty-light.png') })
   await ctx.close()
 }
-await browser.close()
-console.log(`저장: ${OUT} · 콘솔 에러 ${errors}건`)
-process.exit(errors ? 2 : 0)
+console.log(`저장: ${OUT}`)
+await finish(browser)

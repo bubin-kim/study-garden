@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { FocusPicker } from '@/components/timer/FocusPicker'
 import { formatClock } from '@/lib/time'
 import { useTimerStore } from '@/stores/timer-store'
 import { useUiStore } from '@/stores/ui-store'
@@ -55,6 +56,7 @@ export function TimerSection() {
         {idle ? durationMin : activeDurationMin}분 집중
         {idle && <ChevronDown size={14} />}
       </button>
+      <FocusPicker />
 
       <p className="mt-3 text-[76px] font-extralight leading-none tracking-[-0.03em] tabular-nums">
         {formatClock(remainingSec)}

@@ -13,6 +13,14 @@ interface SavedTimer {
   endAt: number | null
   remainingSec: number
   activeDurationMin: number
+  /** docs/03 M3 — 이 세션이 가꾸는 과목·할 일 */
+  focus?: Focus
+}
+
+/** 세션 시작 전에 고르는 "무엇을 가꿀까요" — 할 일을 고르면 그 할 일의 과목이 따라온다 */
+export interface Focus {
+  subjectId?: string
+  taskId?: string
 }
 
 function saveTimer(t: SavedTimer) {
@@ -34,6 +42,13 @@ interface TimerState {
   remainingSec: number
   justCompleted: boolean
   lastCompletedMin: number
+  /** idle에서 고른 다음 세션의 대상 */
+  picked: Focus
+  /** 진행 중인 세션의 대상 (start 시 picked에서 복사) */
+  activeFocus: Focus
+  /** 방금 끝난 세션의 대상 — 완료 오버레이에서 "이 할 일을 마쳤나요?"용 */
+  lastFocus: Focus
+  pick(focus: Focus): void
   hydrate(): void
   start(): void
   pause(): void
@@ -51,6 +66,11 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   remainingSec: 30 * 60,
   justCompleted: false,
   lastCompletedMin: 30,
+  picked: {},
+  activeFocus: {},
+  lastFocus: {},
+
+  pick: (focus) => set({ picked: focus }),
 
   hydrate: () => {
     const saved = Number(localStorage.getItem(DURATION_KEY))
@@ -74,11 +94,16 @@ export const useTimerStore = create<TimerState>((set, get) => ({
             endAt: t.endAt,
             remainingSec: remaining,
             activeDurationMin: t.activeDurationMin,
+            activeFocus: t.focus ?? {},
           })
         } else {
-          useSessionStore.getState().add(t.activeDurationMin)
+          useSessionStore.getState().add(t.activeDurationMin, t.focus)
           clearSavedTimer()
-          set({ justCompleted: true, lastCompletedMin: t.activeDurationMin })
+          set({
+            justCompleted: true,
+            lastCompletedMin: t.activeDurationMin,
+            lastFocus: t.focus ?? {},
+          })
         }
       } else if (t.status === 'paused' && t.remainingSec > 0) {
         set({
@@ -86,6 +111,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
           endAt: null,
           remainingSec: t.remainingSec,
           activeDurationMin: t.activeDurationMin,
+          activeFocus: t.focus ?? {},
         })
       }
     } catch {
@@ -94,20 +120,21 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   start: () => {
-    const { status, remainingSec, durationMin } = get()
+    const { status, remainingSec, durationMin, picked } = get()
     const secs = status === 'paused' ? remainingSec : durationMin * 60
     const endAt = Date.now() + secs * 1000
     set({
       status: 'running',
       endAt,
       remainingSec: secs,
-      ...(status !== 'paused' && { activeDurationMin: durationMin }),
+      ...(status !== 'paused' && { activeDurationMin: durationMin, activeFocus: picked }),
     })
     saveTimer({
       status: 'running',
       endAt,
       remainingSec: secs,
       activeDurationMin: get().activeDurationMin,
+      focus: get().activeFocus,
     })
   },
 
@@ -121,6 +148,7 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       endAt: null,
       remainingSec,
       activeDurationMin: get().activeDurationMin,
+      focus: get().activeFocus,
     })
   },
 
@@ -130,15 +158,16 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       status: 'idle',
       endAt: null,
       remainingSec: s.durationMin * 60,
+      activeFocus: {},
     }))
   },
 
   tick: () => {
-    const { status, endAt, activeDurationMin, durationMin } = get()
+    const { status, endAt, activeDurationMin, durationMin, activeFocus } = get()
     if (status !== 'running' || endAt == null) return
     const remaining = Math.max(0, Math.round((endAt - Date.now()) / 1000))
     if (remaining <= 0) {
-      useSessionStore.getState().add(activeDurationMin)
+      useSessionStore.getState().add(activeDurationMin, activeFocus)
       clearSavedTimer()
       set({
         status: 'idle',
@@ -146,6 +175,8 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         remainingSec: durationMin * 60,
         justCompleted: true,
         lastCompletedMin: activeDurationMin,
+        lastFocus: activeFocus,
+        activeFocus: {},
       })
     } else {
       set({ remainingSec: remaining })

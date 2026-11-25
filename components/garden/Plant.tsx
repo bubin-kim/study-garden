@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { PlantStage } from '@/types'
+import type { PlantStage, SpeciesId } from '@/types'
 
 const PETAL_COLORS = ['var(--petal)', 'var(--petal-2)', 'var(--accent)']
 
@@ -69,8 +69,135 @@ function LeafShape() {
   )
 }
 
-function FlowerShape({ variant }: { variant: number }) {
+/** 기존(과목 없음) 꽃송이 — 둥근 꽃잎 6장. variant로 색이 달라진다. */
+function DefaultBloom({ variant }: { variant: number }) {
   const petal = PETAL_COLORS[variant % PETAL_COLORS.length]
+  return (
+    <>
+      {PETAL_ANGLES.map((deg) => (
+        <ellipse
+          key={deg}
+          cx="0"
+          cy="-6.4"
+          rx="3.2"
+          ry="6.2"
+          fill={petal}
+          transform={`rotate(${deg})`}
+        />
+      ))}
+      <circle cx="0" cy="0" r="3.7" fill="var(--core)" />
+      <circle cx="-1.1" cy="-1.1" r="1.1" fill="rgba(255,255,255,0.45)" />
+    </>
+  )
+}
+
+/* ── 과목 식물 종 (docs/03 M3) ─────────────────────
+   꽃 단계에서 모양으로 구분한다. 기준점 (0,0)은 꽃송이 중심(줄기 끝 위). */
+
+/** 0 튤립 — 위가 열린 컵 */
+function TulipBloom() {
+  return (
+    <>
+      <path d="M-9 0 C-10.5 -9 -7 -16.5 -3 -18 C-2.5 -12 -1.5 -6 0 -1 Z" fill="var(--sp-0-soft)" />
+      <path d="M9 0 C10.5 -9 7 -16.5 3 -18 C2.5 -12 1.5 -6 0 -1 Z" fill="var(--sp-0-soft)" />
+      <path d="M-6.6 2 C-8.6 -6 -5.6 -14.6 0 -17.4 C5.6 -14.6 8.6 -6 6.6 2 C3.4 4.6 -3.4 4.6 -6.6 2 Z" fill="var(--sp-0)" />
+      <path d="M-3 -1 C-3.6 -6 -2 -10.6 0 -12.4" stroke="rgba(255,255,255,0.4)" strokeWidth="1.1" strokeLinecap="round" fill="none" />
+    </>
+  )
+}
+
+/** 1 해바라기 — 꽃잎 두 겹 + 크고 진한 중심 */
+function SunflowerBloom() {
+  return (
+    <>
+      {Array.from({ length: 14 }, (_, i) => (
+        <ellipse key={`b${i}`} cx="0" cy="-7.8" rx="1.9" ry="4.2" fill="var(--sp-1-soft)" transform={`rotate(${i * 25.7 + 12.8})`} />
+      ))}
+      {Array.from({ length: 14 }, (_, i) => (
+        <ellipse key={i} cx="0" cy="-8.4" rx="2.1" ry="4.8" fill="var(--sp-1)" transform={`rotate(${i * 25.7})`} />
+      ))}
+      <circle r="5.4" fill="var(--trunk)" />
+      <circle r="3.2" fill="var(--trunk)" opacity="0.6" />
+      <circle cx="-1.6" cy="-1.6" r="1.1" fill="rgba(255,255,255,0.3)" />
+    </>
+  )
+}
+
+/** 2 라벤더 — 위로 뻗은 꽃 이삭 */
+function LavenderBloom() {
+  const buds = [
+    [0, 5, 2.8], [-2.4, 1, 2.6], [2.4, -1.6, 2.6], [-2.1, -5.4, 2.4], [2.1, -8.6, 2.2],
+    [-1.6, -12.2, 2], [1.4, -15.4, 1.8], [0, -18.6, 1.5],
+  ]
+  return (
+    <>
+      <path d="M0 7 L0 -18" stroke="var(--stem)" strokeWidth="1.5" strokeLinecap="round" />
+      {buds.map(([x, y, r], i) => (
+        <ellipse key={i} cx={x} cy={y} rx={r} ry={r * 1.35} fill={i % 2 ? 'var(--sp-2-soft)' : 'var(--sp-2)'} />
+      ))}
+    </>
+  )
+}
+
+/** 3 수국 — 작은 꽃(네 장)이 둥글게 모인 송이 */
+function HydrangeaBloom() {
+  const florets = [
+    [0, -4], [-6.4, -2], [6.4, -2], [-3.4, -9.6], [3.4, -9.6],
+    [-8, -8], [8, -8], [0, -14], [-4, 2.4], [4, 2.4],
+  ]
+  return (
+    <>
+      <circle cx="0" cy="-5" r="10.5" fill="var(--sp-3-soft)" opacity="0.55" />
+      {florets.map(([x, y], i) => (
+        <g key={i} transform={`translate(${x} ${y}) rotate(${i * 23})`}>
+          {[[0, -1.7], [1.7, 0], [0, 1.7], [-1.7, 0]].map(([dx, dy], k) => (
+            <circle key={k} cx={dx} cy={dy} r="1.75" fill={i % 3 === 1 ? 'var(--sp-3-soft)' : 'var(--sp-3)'} />
+          ))}
+          <circle r="0.7" fill="var(--core)" />
+        </g>
+      ))}
+    </>
+  )
+}
+
+/** 4 동백 — 겹꽃. 둥근 꽃잎 두 겹 + 노란 수술 */
+function CamelliaBloom() {
+  return (
+    <>
+      {[0, 72, 144, 216, 288].map((deg) => (
+        <circle key={deg} cx="0" cy="-6.4" r="6.2" fill="var(--sp-4)" transform={`rotate(${deg})`} />
+      ))}
+      {[36, 108, 180, 252, 324].map((deg) => (
+        <circle key={deg} cx="0" cy="-3.8" r="4.2" fill="var(--sp-4-soft)" transform={`rotate(${deg})`} />
+      ))}
+      {[0, 60, 120, 180, 240, 300].map((deg) => (
+        <circle key={deg} cx="0" cy="-1.9" r="1" fill="var(--core)" transform={`rotate(${deg})`} />
+      ))}
+      <circle r="1.4" fill="var(--core)" />
+    </>
+  )
+}
+
+export const SPECIES_BLOOM: Record<SpeciesId, () => React.ReactElement> = {
+  0: TulipBloom,
+  1: SunflowerBloom,
+  2: LavenderBloom,
+  3: HydrangeaBloom,
+  4: CamelliaBloom,
+}
+
+/** 설정·선택 UI용 종 미리보기 (꽃송이만) */
+export function SpeciesIcon({ species, className }: { species: SpeciesId; className?: string }) {
+  const Bloom = SPECIES_BLOOM[species]
+  return (
+    <svg viewBox="-15 -21 30 30" aria-hidden className={className}>
+      <Bloom />
+    </svg>
+  )
+}
+
+function FlowerShape({ variant, species }: { variant: number; species: SpeciesId | null }) {
+  const Bloom = species != null ? SPECIES_BLOOM[species] : null
   return (
     <g>
       <path
@@ -87,19 +214,7 @@ function FlowerShape({ variant }: { variant: number }) {
           className="plant-sway"
           style={{ '--sway-a': '2.1deg', animationDuration: '3.9s' } as React.CSSProperties}
         >
-          {PETAL_ANGLES.map((deg) => (
-            <ellipse
-              key={deg}
-              cx="0"
-              cy="-6.4"
-              rx="3.2"
-              ry="6.2"
-              fill={petal}
-              transform={`rotate(${deg})`}
-            />
-          ))}
-          <circle cx="0" cy="0" r="3.7" fill="var(--core)" />
-          <circle cx="-1.1" cy="-1.1" r="1.1" fill="rgba(255,255,255,0.45)" />
+          {Bloom ? <Bloom /> : <DefaultBloom variant={variant} />}
         </g>
       </g>
     </g>
@@ -211,6 +326,8 @@ function TreeShape({ variant }: { variant: number }) {
 interface PlantProps {
   stage: PlantStage
   variant?: number
+  /** 과목 식물 종 — null이면 기존 모습 (docs/03 M3) */
+  species?: SpeciesId | null
   delay?: number
 }
 
@@ -223,7 +340,7 @@ const SWAY: Record<PlantStage, { amp: number; dur: number }> = {
 }
 
 /** 정원 SVG 안에서 쓰는 식물 한 그루. 기준점 (0,0)이 뿌리. */
-export function Plant({ stage, variant = 0, delay = 0 }: PlantProps) {
+export function Plant({ stage, variant = 0, species = null, delay = 0 }: PlantProps) {
   const sway = SWAY[stage]
   const swayStyle = {
     '--sway-a': `${sway.amp}deg`,
@@ -237,13 +354,14 @@ export function Plant({ stage, variant = 0, delay = 0 }: PlantProps) {
       initial={{ scale: 0.2, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 150, damping: 15, delay }}
-      style={{ transformBox: 'fill-box', transformOrigin: '50% 100%' }}
+      // SVG에서는 framer가 style.transformOrigin을 50% 50%로 덮어쓴다 — originX/Y로 뿌리 기준 (docs/03 M2)
+      style={{ transformBox: 'fill-box', originX: 0.5, originY: 1 }}
     >
       <ellipse cx="0" cy="1" rx="10" ry="2.5" fill="var(--plant-shadow)" />
       <g className="plant-sway" style={swayStyle}>
         {stage === 'sprout' && <SproutShape />}
         {stage === 'leaf' && <LeafShape />}
-        {stage === 'flower' && <FlowerShape variant={variant} />}
+        {stage === 'flower' && <FlowerShape variant={variant} species={species} />}
         {stage === 'tree' && <TreeShape variant={variant} />}
       </g>
     </motion.g>

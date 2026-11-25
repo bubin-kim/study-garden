@@ -1,6 +1,7 @@
 'use client'
 
-import type { PlantData } from '@/types'
+import type { GoalFlowerData, PlantData } from '@/types'
+import { GoalFlower } from './GoalFlower'
 import { Plant } from './Plant'
 import { GrowingSeed } from './GrowingSeed'
 
@@ -132,6 +133,8 @@ function Ambience() {
 
 interface GardenProps {
   plants: PlantData[]
+  /** 목표를 달성한 날의 꽃 — 세션 식물 앞줄 화단에 핀다 (docs/03) */
+  goalFlowers?: GoalFlowerData[]
   growing?: boolean
   emptyText?: string
   emptySub?: string
@@ -143,6 +146,7 @@ interface GardenProps {
 
 export function Garden({
   plants,
+  goalFlowers = [],
   growing = false,
   emptyText,
   emptySub,
@@ -151,7 +155,7 @@ export function Garden({
 }: GardenProps) {
   // 뒤쪽(depth 큰) 식물부터 그려서 앞 식물이 자연스럽게 겹치게 한다
   const sorted = [...plants].sort((a, b) => b.depth - a.depth)
-  const empty = plants.length === 0 && !growing
+  const empty = plants.length === 0 && goalFlowers.length === 0 && !growing
 
   return (
     <div className="relative w-full">
@@ -168,12 +172,22 @@ export function Garden({
           const y = groundTopY(x) + 6 + (1 - p.depth) * 22
           const scale = 0.78 + (1 - p.depth) * 0.5
           return (
-            <g key={p.id} transform={`translate(${x} ${y}) scale(${scale})`}>
+            <g key={p.id} data-species={p.species ?? undefined} transform={`translate(${x} ${y}) scale(${scale})`}>
               <Plant
                 stage={p.stage}
                 variant={p.variant}
+                species={p.species}
                 delay={Math.min(i * 0.03, 0.5)}
               />
+            </g>
+          )
+        })}
+        {goalFlowers.map((f) => {
+          const x = 40 + f.x * 720
+          const y = Math.min(groundTopY(x) + 32, 246)
+          return (
+            <g key={f.date} data-goal-flower={f.date} transform={`translate(${x} ${y}) scale(1.15)`}>
+              <GoalFlower tilt={f.tilt} />
             </g>
           )
         })}

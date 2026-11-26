@@ -46,7 +46,7 @@ lib/storage/    localStorage repository. 키: 'study-garden:sessions', 'study-ga
 설계 문서: docs/01_season-picker.md (계절 테마 선택 — 자동 기본, 원하면 고정. 2026-07-14 구현 완료)
 · docs/02_pwa.md (PWA 설치 — manifest+아이콘, 서비스 워커 없음. 2026-07-15 구현 완료)
 · docs/03_study-planner.md (공부 계획 고도화 — 목표 체크리스트·과목 식물·D-day·월간 카드. 2026-11-25 승인, 완료)
-· docs/04_demo-garden.md (예시 정원 구경하기 — 공모전 첫 방문 체험. 2026-11-25 승인, 진행 중)
+· docs/04_demo-garden.md (예시 정원 구경하기 — 공모전 첫 방문 체험. 2026-11-25 승인, 2026-11-26 완료 · 부록 다크 계절감)
 
 ## 디자인 시스템 — 토큰이 유일한 진실
 
